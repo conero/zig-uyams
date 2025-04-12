@@ -15,7 +15,10 @@
 使用 zig 初始化项目
 
 ```shell
-# 初始化b
+# 初始化包
 zig init
+
+# zig g
+zig fmt ./..
 ```
 
