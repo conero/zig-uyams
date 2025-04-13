@@ -14,14 +14,14 @@ pub const Arg = struct {
         const args_list = try std.process.argsAlloc(std.heap.c_allocator);
         //defer std.process.argsFree(std.heap.c_allocator, args_list);
         var mySelf = Arg.args(args_list[1..]);
-        mySelf.osArgsList = args_list;
+        //mySelf.osArgsList = args_list;
+        mySelf.osArgsList = null;
         return mySelf;
     }
 
     /// 指定参数列表来解析命令行
     pub fn args(argsList: [][:0]u8) *Arg {
         var command: []u8 = "";
-        std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
         for (argsList, 0..) |arg, index| {
             std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
@@ -33,7 +33,6 @@ pub const Arg = struct {
                 command = arg;
             }
         }
-        std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
 
         var initArg = Arg{
             .command = command,

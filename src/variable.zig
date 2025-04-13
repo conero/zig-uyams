@@ -3,4 +3,4 @@
 // 版本号
 pub const Version = "0.0.1";
 // 发布日期
-pub const Release = "dev"; // dev|20060102
+pub const Release = "20250413"; // dev|20060102
