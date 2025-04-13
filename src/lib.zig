@@ -12,6 +12,7 @@ pub const Version = variable.Version;
 // 发布日期
 pub const Release = variable.Release;
 
+// 原示例代码
 pub fn add(a: i32, b: i32) i32 {
     return a + b;
 }

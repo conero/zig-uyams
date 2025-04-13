@@ -12,7 +12,8 @@
 
 > cli 基础实现
 
-
+- **cli**
+  - feat: App 通过 hashMap 实现命令注册
 
 
 

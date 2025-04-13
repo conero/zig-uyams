@@ -25,6 +25,8 @@ zig fmt ./..
 # 编译是指定模式
 # 支持 fast, safe, small
 zig build --release=fast
+# 与上一致
+zig build -Doptimize=ReleaseSafe
 ```
 
 

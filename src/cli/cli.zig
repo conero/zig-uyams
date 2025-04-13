@@ -18,19 +18,26 @@ pub const App = struct {
     indexFn: *const fn (*const Arg) void = defaultIndexFn,
     args: ?*Arg = null,
 
+    // 注册字典
+    registersMap: std.AutoHashMap(*const []u8, *const fn (*const Arg) void),
+
     /// 初始化应用
     pub fn new() App {
+        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        const allocator = gpa.allocator();
+
         return App{
             //.args = null,
+            .registersMap = std
+                .AutoHashMap(*const []u8, *const fn (*const Arg) void)
+                .init(allocator),
         };
     }
 
     /// 命令注册
-    pub fn command(self: *App, name: []8, runFn: fn (*Arg) void) void {
-        _ = self;
-        _ = name;
-        _ = runFn;
-        // @todo 待实现
+    pub fn command(self: *App, name: *const []8, runFn: fn (*Arg) void) *App {
+        self.registersMap.put(name, runFn);
+        return self;
     }
 
     /// 定义入口函数
@@ -50,6 +57,12 @@ pub const App = struct {
             return;
         }
 
+        // 注册命令
+        if (self.registersMap.get(&vCommand)) |callFn| {
+            callFn(args);
+            return;
+        }
+
         std.debug.print("\n正在启动命令行\n   ...need todo.\n", .{});
 
         // @todo 待实现
@@ -58,8 +71,11 @@ pub const App = struct {
 
     /// 内容释放
     pub fn free(self: *App) void {
+        // 参数内容释放
         if (self.args) |vArgs| {
             vArgs.free();
         }
+        // 字典内存释放
+        self.registersMap.deinit();
     }
 };
