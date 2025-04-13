@@ -16,7 +16,7 @@ fn defaultIndexFn(_: *const Arg) void {
 pub const App = struct {
     // 入口函数
     indexFn: *const fn (*const Arg) void = defaultIndexFn,
-    //args: ?*const Arg = null,
+    args: ?*const Arg = null,
 
     /// 初始化应用
     pub fn new() App {
@@ -41,7 +41,9 @@ pub const App = struct {
     // 运行命令程序
     pub fn run(self: *App) !void {
         const args = try Arg.new();
-        //self.args = args;
+        //defer args.free();
+
+        self.args = args;
         const vCommand = args.getCommand();
         std.debug.print("vCommand: {s}, vlen: {d}\n", .{ vCommand, vCommand.len });
         if (vCommand.len == 0) {
@@ -53,5 +55,12 @@ pub const App = struct {
 
         // @todo 待实现
         // ...
+    }
+
+    /// 内容释放
+    pub fn free(self: *App) void {
+        if (self.args) |vArgs| {
+            vArgs.free();
+        }
     }
 };

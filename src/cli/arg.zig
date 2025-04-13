@@ -4,6 +4,7 @@ const std = @import("std");
 pub const Arg = struct {
     /// 命令
     command: []u8 = "",
+    osArgsList: ?[][]u8, // 操作系统命令列表
     /// 选项
     //options: [][:0]u8,
     //allocator: std.mem.Allocator,
@@ -11,8 +12,10 @@ pub const Arg = struct {
     /// 使用命令参数示例化参数
     pub fn new() !*const Arg {
         const args_list = try std.process.argsAlloc(std.heap.c_allocator);
-        defer std.process.argsFree(std.heap.c_allocator, args_list);
-        return Arg.args(args_list[1..]);
+        //defer std.process.argsFree(std.heap.c_allocator, args_list);
+        const mySelf = Arg.args(args_list[1..]);
+        mySelf.osArgsList = args_list;
+        return mySelf;
     }
 
     /// 指定参数列表来解析命令行
@@ -38,8 +41,15 @@ pub const Arg = struct {
 
     /// 获取命令
     pub fn getCommand(self: *const Arg) []u8 {
-        std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
+        //std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
         return self.command;
+    }
+
+    /// 内存释放
+    pub fn free(self: *const Arg) void {
+        if (self.osArgsList) |osArgs| {
+            std.process.argsFree(std.heap.c_allocator, osArgs);
+        }
     }
 };
 
