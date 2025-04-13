@@ -2,19 +2,19 @@
 //! you are making an executable, the convention is to delete this file and
 //! start with main.zig instead.
 const std = @import("std");
+const variable = @import("variable.zig");
 const testing = std.testing;
 
 // 命令行解析
 pub const cli = @import("cli/cli.zig");
+// 版本号
+pub const Version = variable.Version;
+// 发布日期
+pub const Release = variable.Release;
 
 pub fn add(a: i32, b: i32) i32 {
     return a + b;
 }
-
-// 版本号
-pub const Version = "0.0.1";
-// 发布日期
-pub const Release = "dev"; // dev|20060102
 
 test "basic add functionality" {
     try testing.expect(add(3, 7) == 10);
