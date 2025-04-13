@@ -12,6 +12,7 @@ pub fn main() !void {
     // 命令行运行
     var app = uymas.cli.App.new();
     defer app.free();
+
     try app.run();
     //_ = try uymas.cli.Arg.new();
 }

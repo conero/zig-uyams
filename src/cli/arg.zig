@@ -4,22 +4,22 @@ const std = @import("std");
 pub const Arg = struct {
     /// 命令
     command: []u8 = "",
-    osArgsList: ?[][]u8, // 操作系统命令列表
+    osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
     /// 选项
     //options: [][:0]u8,
     //allocator: std.mem.Allocator,
 
     /// 使用命令参数示例化参数
-    pub fn new() !*const Arg {
+    pub fn new() !*Arg {
         const args_list = try std.process.argsAlloc(std.heap.c_allocator);
         //defer std.process.argsFree(std.heap.c_allocator, args_list);
-        const mySelf = Arg.args(args_list[1..]);
+        var mySelf = Arg.args(args_list[1..]);
         mySelf.osArgsList = args_list;
         return mySelf;
     }
 
     /// 指定参数列表来解析命令行
-    pub fn args(argsList: [][:0]u8) *const Arg {
+    pub fn args(argsList: [][:0]u8) *Arg {
         var command: []u8 = "";
         std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
         for (argsList, 0..) |arg, index| {
@@ -34,19 +34,21 @@ pub const Arg = struct {
             }
         }
         std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
-        return &Arg{
+
+        var initArg = Arg{
             .command = command,
         };
+        return &initArg;
     }
 
     /// 获取命令
-    pub fn getCommand(self: *const Arg) []u8 {
+    pub fn getCommand(self: *Arg) []u8 {
         //std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
         return self.command;
     }
 
     /// 内存释放
-    pub fn free(self: *const Arg) void {
+    pub fn free(self: *Arg) void {
         if (self.osArgsList) |osArgs| {
             std.process.argsFree(std.heap.c_allocator, osArgs);
         }
