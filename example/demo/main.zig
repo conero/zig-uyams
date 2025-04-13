@@ -8,4 +8,8 @@ pub fn main() !void {
     std.debug.print("uymas 命令行程序\n", .{});
     std.debug.print("巧巧，你好呀\n", .{});
     std.debug.print("数据类型：{}", .{@TypeOf(uymas.Version)});
+
+    // 命令行运行
+    var app = uymas.cli.App.new();
+    app.run();
 }

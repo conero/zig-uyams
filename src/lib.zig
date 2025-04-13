@@ -4,6 +4,9 @@
 const std = @import("std");
 const testing = std.testing;
 
+// 命令行解析
+pub const cli = @import("cli/cli.zig");
+
 pub fn add(a: i32, b: i32) i32 {
     return a + b;
 }
