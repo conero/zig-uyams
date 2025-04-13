@@ -18,19 +18,28 @@ pub const Arg = struct {
     /// 指定参数列表来解析命令行
     pub fn args(argsList: [][:0]u8) *const Arg {
         var command: []u8 = "";
+        std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
         for (argsList, 0..) |arg, index| {
-            std.debug.print("{d} -> {s}\n", .{ index, arg });
+            std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
             if (dOpt.@"1") {
                 continue;
             }
             if (command.len == 0) {
+                std.debug.print("arg: {s}\n", .{arg});
                 command = arg;
             }
         }
+        std.debug.print("command2: {s}, len: {d}\n", .{ command, command.len });
         return &Arg{
             .command = command,
         };
+    }
+
+    /// 获取命令
+    pub fn getCommand(self: *const Arg) []u8 {
+        std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
+        return self.command;
     }
 };
 
