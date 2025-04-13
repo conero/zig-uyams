@@ -18,8 +18,13 @@
 # 初始化包
 zig init
 
-# zig g
+# zig 格式化
 zig fmt ./..
+
+
+# 编译是指定模式
+# 支持 fast, safe, small
+zig build --release=fast
 ```
 
 
