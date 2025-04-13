@@ -13,7 +13,7 @@ pub const App = struct {
     }
     // 运行命令程序
     pub fn run(self: *App) void {
-        std.debug.print("\n正在启动命令行\n   ...need todo.", .{});
+        std.debug.print("\n正在启动命令行\n   ...need todo.\n", .{});
         // @todo 待实现
         _ = self;
     }

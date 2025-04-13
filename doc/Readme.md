@@ -22,3 +22,18 @@ zig init
 zig fmt ./..
 ```
 
+
+
+
+
+
+
+
+
+
+
+### 附录
+
+#### 参考
+
+- [【实战进阶】用Zig高效引入外部库，打造专属命令行神器！](https://blog.csdn.net/xiaodeshi/article/details/139704110)
