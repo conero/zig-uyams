@@ -27,6 +27,9 @@ zig fmt ./..
 zig build --release=fast
 # 与上一致
 zig build -Doptimize=ReleaseSafe
+
+# 编译时输出g
+zig build --summary all
 ```
 
 

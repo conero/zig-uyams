@@ -76,3 +76,14 @@ const uymas = @import("uymas");
 ...
 ```
 
+
+
+### 注意
+
+windows 中文乱码
+
+```shell
+# powershell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+

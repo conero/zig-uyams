@@ -37,11 +37,14 @@ pub fn build(b: *std.Build) void {
     // 链接 C 标准库
     example_demo.linkLibC();
     b.installArtifact(example_demo);
+
+    // 程序运行
     const run_demo = b.addRunArtifact(example_demo);
-    run_demo.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_demo.addArgs(args);
-    }
+    const run_step = b.step("run", "Run the application");
+    run_step.dependOn(&run_demo.step);
+    //if (b.args) |args| {
+    //    run_demo.addArgs(args);
+    //}
     // const run_step = b.step("run", "Run the app");
     // run_step.dependOn(&run_demo.step);
 
