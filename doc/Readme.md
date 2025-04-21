@@ -28,8 +28,11 @@ zig build --release=fast
 # 与上一致
 zig build -Doptimize=ReleaseSafe
 
-# 编译时输出g
+# 编译时输出概述
 zig build --summary all
+
+# 编译并执行
+zig build run
 ```
 
 

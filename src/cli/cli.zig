@@ -35,8 +35,16 @@ pub const App = struct {
     }
 
     /// 命令注册
-    pub fn command(self: *App, name: *const []8, runFn: fn (*Arg) void) *App {
+    pub fn command(self: *App, name: *const []u8, runFn: fn (*Arg) void) *App {
         self.registersMap.put(name, runFn);
+        return self;
+    }
+
+    /// 命令注册多应用
+    pub fn commandList(self: *App, nameList: []*const []u8, runFn: fn (*Arg) void) *App {
+        for (nameList) |name| {
+            self.command(name, runFn);
+        }
         return self;
     }
 
