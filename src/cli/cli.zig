@@ -18,6 +18,7 @@ pub const App = struct {
     allocator: std.mem.Allocator,
     // 入口函数
     indexFn: *const fn (*const Arg) void = defaultIndexFn,
+    helpFn: ?*const fn (*const Arg) void = null,
     args: ?*Arg = null,
 
     // 注册字典
@@ -56,6 +57,11 @@ pub const App = struct {
         self.indexFn = runFn;
     }
 
+    /// 帮助命令
+    pub fn help(self: *App, runFn: fn (*const Arg) void) void {
+        self.helpFn = runFn;
+    }
+
     // 运行命令程序
     pub fn run(self: *App) !void {
         var args = try Arg.new();
@@ -74,11 +80,16 @@ pub const App = struct {
             return;
         }
 
-        // 命令不存在
-        if (vCommand.len > 0) {
-            std.debug.print("{s}: 命令不存在，请查看文帮助后重试", .{vCommand});
-            return;
+        // 帮助命令
+        if (std.mem.eql(u8, vCommand, "help") and std.mem.eql(u8, vCommand, "?")) {
+            if (self.helpFn) |helpFn| {
+                helpFn(args);
+                return;
+            }
         }
+
+        // 命令不存在
+        std.debug.print("{s}: 命令不存在，请查看文帮助后重试", .{vCommand});
     }
 
     /// 内容释放

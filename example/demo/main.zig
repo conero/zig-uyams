@@ -16,11 +16,12 @@ pub fn main() !void {
     // test
     _ = app.command("test", testCmd);
     // 命令注册
-    //    app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
+    // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
+    //app.commandList([_]*const []u8{ "demo", "dm" }, demoCmd);
     // 入口函数
     app.index(indexCmd);
+    app.help(helpCmd);
     try app.run();
-    //_ = try uymas.cli.Arg.new();
 }
 
 fn indexCmd(_: *const uymas.cli.Arg) void {
@@ -32,6 +33,9 @@ fn indexCmd(_: *const uymas.cli.Arg) void {
 // 帮助文件信息
 fn helpCmd(_: *const uymas.cli.Arg) void {
     std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
+    std.debug.print("  test    测试命令\n", .{});
+    std.debug.print("  demo    示例多命令注册（dm）\n", .{});
+    std.debug.print("\n", .{});
 }
 
 // 帮助文件信息
@@ -39,4 +43,10 @@ fn testCmd(param: *const uymas.cli.Arg) void {
     std.debug.print("---- test ---- \n", .{});
     std.debug.print("commond: {s}\n", .{param.command});
     std.debug.print("\n", .{});
+}
+
+// demo 命令
+fn demoCmd(_: *const uymas.cli.Arg) void {
+    std.debug.print("---- demo(dm) ---- \n\n", .{});
+    std.debug.print("这是一个示例命令……", .{});
 }
