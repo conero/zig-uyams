@@ -9,6 +9,8 @@ pub fn main() !void {
     var app = uymas.cli.App.new();
     defer app.free();
 
+    // test
+    _ = app.command("test", testCmd);
     // 命令注册
     //    app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
     // 入口函数
@@ -24,6 +26,11 @@ fn indexCmd(_: *const uymas.cli.Arg) void {
 }
 
 // 帮助文件信息
-fn helpCmd(param: *const uymas.cli.Arg) void {
-    std.debug.print("commond: {s}", .{param.command});
+fn helpCmd(_: *const uymas.cli.Arg) void {
+    std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
+}
+
+// 帮助文件信息
+fn testCmd(param: *const uymas.cli.Arg) void {
+    std.debug.print("commond: {s}\n", .{param.command});
 }

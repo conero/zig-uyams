@@ -19,7 +19,7 @@ pub const App = struct {
     args: ?*Arg = null,
 
     // 注册字典
-    registersMap: std.AutoHashMap(*const []u8, *const fn (*const Arg) void),
+    registersMap: std.StringHashMap(*const fn (*const Arg) void),
 
     /// 初始化应用
     pub fn new() App {
@@ -28,15 +28,15 @@ pub const App = struct {
 
         return App{
             //.args = null,
-            .registersMap = std
-                .AutoHashMap(*const []u8, *const fn (*const Arg) void)
-                .init(allocator),
+            .registersMap = std.StringHashMap(*const fn (*const Arg) void).init(allocator),
         };
     }
 
     /// 命令注册
-    pub fn command(self: *App, name: *const []u8, runFn: fn (*Arg) void) *App {
-        self.registersMap.put(name, runFn);
+    pub fn command(self: *App, name: []const u8, runFn: fn (*Arg) void) *App {
+        self.registersMap.put(name, runFn) catch |err| {
+            std.debug.print("registersMap 注册异常，{?}", .{err});
+        };
         return self;
     }
 
@@ -66,7 +66,7 @@ pub const App = struct {
         }
 
         // 注册命令
-        if (self.registersMap.get(&vCommand)) |callFn| {
+        if (self.registersMap.get(vCommand)) |callFn| {
             callFn(args);
             return;
         }

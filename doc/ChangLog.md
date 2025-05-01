@@ -14,6 +14,9 @@
 
 - **cli**
   - feat: App 通过 hashMap 实现命令注册
+- **example/demo**
+  - feat: 加入test/help命令
+
 
 
 

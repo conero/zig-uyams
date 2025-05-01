@@ -3,7 +3,7 @@ const std = @import("std");
 /// 命令解析
 pub const Arg = struct {
     /// 命令
-    command: []u8 = "",
+    command: []const u8 = "",
     osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
     /// 选项
     //options: [][:0]u8,
@@ -41,7 +41,7 @@ pub const Arg = struct {
     }
 
     /// 获取命令
-    pub fn getCommand(self: *Arg) []u8 {
+    pub fn getCommand(self: *Arg) []const u8 {
         //std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
         return self.command;
     }
