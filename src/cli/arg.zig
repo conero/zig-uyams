@@ -23,13 +23,14 @@ pub const Arg = struct {
     pub fn args(argsList: [][:0]u8) *Arg {
         var command: []u8 = "";
         for (argsList, 0..) |arg, index| {
-            std.debug.print(" => {d} -> {s}\n", .{ index, arg });
+            //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
             if (dOpt.@"1") {
                 continue;
             }
-            if (command.len == 0) {
-                std.debug.print("arg: {s}\n", .{arg});
+            // 认定第一个参数为命令行
+            if (command.len == 0 and index == 0) {
+                //std.debug.print("arg: {s}\n", .{arg});
                 command = arg;
             }
         }

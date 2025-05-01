@@ -5,8 +5,12 @@ const std = @import("std");
 
 // 内容示例
 pub fn main() !void {
+    // 使用 arena allocator 简化内存管理
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
     // 命令行运行
-    var app = uymas.cli.App.new();
+    var app = uymas.cli.App.new(allocator);
     defer app.free();
 
     // test
@@ -32,5 +36,7 @@ fn helpCmd(_: *const uymas.cli.Arg) void {
 
 // 帮助文件信息
 fn testCmd(param: *const uymas.cli.Arg) void {
+    std.debug.print("---- test ---- \n", .{});
     std.debug.print("commond: {s}\n", .{param.command});
+    std.debug.print("\n", .{});
 }

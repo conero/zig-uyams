@@ -14,6 +14,8 @@ fn defaultIndexFn(_: *const Arg) void {
 
 /// cli 应用处理器
 pub const App = struct {
+    // 内存分配其
+    allocator: std.mem.Allocator,
     // 入口函数
     indexFn: *const fn (*const Arg) void = defaultIndexFn,
     args: ?*Arg = null,
@@ -22,11 +24,12 @@ pub const App = struct {
     registersMap: std.StringHashMap(*const fn (*const Arg) void),
 
     /// 初始化应用
-    pub fn new() App {
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        const allocator = gpa.allocator();
-
+    pub fn new(allocator: std.mem.Allocator) App {
+        //报错：Segmentation fault at address 0xf5a8c00b70
+        //var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        //const allocator = gpa.allocator();
         return App{
+            .allocator = allocator,
             //.args = null,
             .registersMap = std.StringHashMap(*const fn (*const Arg) void).init(allocator),
         };
@@ -35,7 +38,7 @@ pub const App = struct {
     /// 命令注册
     pub fn command(self: *App, name: []const u8, runFn: fn (*Arg) void) *App {
         self.registersMap.put(name, runFn) catch |err| {
-            std.debug.print("registersMap 注册异常，{?}", .{err});
+            std.debug.print("registersMap 注册异常，{?}\n", .{err});
         };
         return self;
     }
@@ -71,10 +74,11 @@ pub const App = struct {
             return;
         }
 
-        std.debug.print("\n正在启动命令行\n   ...need todo.\n", .{});
-
-        // @todo 待实现
-        // ...
+        // 命令不存在
+        if (vCommand.len > 0) {
+            std.debug.print("{s}: 命令不存在，请查看文帮助后重试", .{vCommand});
+            return;
+        }
     }
 
     /// 内容释放
