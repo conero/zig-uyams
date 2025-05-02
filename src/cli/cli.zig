@@ -45,9 +45,9 @@ pub const App = struct {
     }
 
     /// 命令注册多应用
-    pub fn commandList(self: *App, nameList: []*const []u8, runFn: fn (*Arg) void) *App {
+    pub fn commandList(self: *App, nameList: []const []const u8, runFn: fn (*Arg) void) *App {
         for (nameList) |name| {
-            self.command(name, runFn);
+            _ = self.command(name, runFn);
         }
         return self;
     }

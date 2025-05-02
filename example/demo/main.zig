@@ -17,7 +17,8 @@ pub fn main() !void {
     _ = app.command("test", testCmd);
     // 命令注册
     // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
-    //app.commandList([_]*const []u8{ "demo", "dm" }, demoCmd);
+    const vDemoCmd = [_][]const u8{ "demo", "dm" };
+    _ = app.commandList(&vDemoCmd, demoCmd);
     // 入口函数
     app.index(indexCmd);
     app.help(helpCmd);
