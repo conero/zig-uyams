@@ -81,7 +81,7 @@ pub const App = struct {
         }
 
         // 帮助命令
-        if (std.mem.eql(u8, vCommand, "help") and std.mem.eql(u8, vCommand, "?")) {
+        if (std.mem.eql(u8, vCommand, "help") or std.mem.eql(u8, vCommand, "?")) {
             if (self.helpFn) |helpFn| {
                 helpFn(args);
                 return;
