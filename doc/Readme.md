@@ -33,6 +33,9 @@ zig build --summary all
 
 # 编译并执行
 zig build run
+
+# 跨环境编译
+zig build -Doptimize=ReleaseSmall -Dtarget=x86_64-linux-gnu
 ```
 
 

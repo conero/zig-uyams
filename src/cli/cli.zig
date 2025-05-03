@@ -64,6 +64,7 @@ pub const App = struct {
 
     // 运行命令程序
     pub fn run(self: *App) !void {
+        // var args = try Arg.new(std.heap.c_allocator);
         var args = try Arg.new(self.allocator);
         //defer args.free();
         const vCommand = args.getCommand();
@@ -90,7 +91,7 @@ pub const App = struct {
         }
 
         // 命令不存在
-        std.debug.print("{s}: 命令不存在，请查看文帮助后重试", .{vCommand});
+        std.debug.print("{s}: 命令不存在，请查看文帮助后重试\n", .{vCommand});
     }
 
     /// 内容释放

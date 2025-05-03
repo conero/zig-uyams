@@ -15,7 +15,7 @@ pub const Arg = struct {
         //defer std.process.argsFree(std.heap.c_allocator, args_list);
         var mySelf = Arg.args(args_list[1..]);
         //mySelf.osArgsList = args_list;
-        mySelf.osArgsList = null;
+        mySelf.osArgsList = args_list;
         mySelf.allocator = allocator;
         return mySelf;
     }
