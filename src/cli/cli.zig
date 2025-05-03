@@ -64,7 +64,7 @@ pub const App = struct {
 
     // 运行命令程序
     pub fn run(self: *App) !void {
-        var args = try Arg.new();
+        var args = try Arg.new(self.allocator);
         const vCommand = args.getCommand();
 
         self.args = args;

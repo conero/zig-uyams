@@ -15,6 +15,7 @@
 - **cli**
   - feat: App 通过 hashMap 实现命令注册
   - feat: 新增 App.help 用于注册帮助命令
+  - break: Arg.new 时更改其需传递内存分配器
 - **example/demo**
   - feat: 加入 demo 用于验证多命令注册
   - pref: 加入help命令

@@ -10,8 +10,8 @@ pub const Arg = struct {
     //allocator: std.mem.Allocator,
 
     /// 使用命令参数示例化参数
-    pub fn new() !*Arg {
-        const args_list = try std.process.argsAlloc(std.heap.c_allocator);
+    pub fn new(allocator: std.mem.Allocator) !*Arg {
+        const args_list = try std.process.argsAlloc(allocator);
         //defer std.process.argsFree(std.heap.c_allocator, args_list);
         var mySelf = Arg.args(args_list[1..]);
         //mySelf.osArgsList = args_list;
