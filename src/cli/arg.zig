@@ -7,7 +7,7 @@ pub const Arg = struct {
     osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
     /// 选项
     //options: [][:0]u8,
-    //allocator: std.mem.Allocator,
+    allocator: ?std.mem.Allocator = null,
 
     /// 使用命令参数示例化参数
     pub fn new(allocator: std.mem.Allocator) !*Arg {
@@ -16,6 +16,7 @@ pub const Arg = struct {
         var mySelf = Arg.args(args_list[1..]);
         //mySelf.osArgsList = args_list;
         mySelf.osArgsList = null;
+        mySelf.allocator = allocator;
         return mySelf;
     }
 
@@ -50,7 +51,9 @@ pub const Arg = struct {
     /// 内存释放
     pub fn free(self: *Arg) void {
         if (self.osArgsList) |osArgs| {
-            std.process.argsFree(std.heap.c_allocator, osArgs);
+            if (self.allocator) |allocator| {
+                std.process.argsFree(allocator, osArgs);
+            }
         }
     }
 };

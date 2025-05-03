@@ -95,9 +95,9 @@ pub const App = struct {
     /// 内容释放
     pub fn free(self: *App) void {
         // 参数内容释放
-        if (self.args) |vArgs| {
-            vArgs.free();
-        }
+        // if (self.args) |vArgs| {
+        //     vArgs.free();
+        // }
         // 字典内存释放
         self.registersMap.deinit();
     }
