@@ -11,7 +11,7 @@ pub fn main() !void {
     const allocator = arena.allocator();
     // 命令行运行
     var app = uymas.cli.App.new(allocator);
-    defer app.free();
+    //defer app.free();
 
     // test
     _ = app.command("test", testCmd);
@@ -29,6 +29,7 @@ fn indexCmd(_: *const uymas.cli.Arg) void {
     std.debug.print("uymas 命令行程序\n", .{});
     std.debug.print("巧巧，你好呀\n", .{});
     std.debug.print("数据类型：{}\n", .{@TypeOf(uymas.Version)});
+    std.debug.print("\n\n版本信息： v{s}/{s}\n", .{ uymas.Version, uymas.Release });
 }
 
 // 帮助文件信息
