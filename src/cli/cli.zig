@@ -7,7 +7,7 @@ const variable = @import("../variable.zig");
 pub const Arg = arg.Arg;
 
 // 默认入口命令
-fn defaultIndexFn(_: *const Arg) void {
+fn defaultIndexFn(_: *Arg) void {
     std.debug.print("欢迎使用 zigUymas 库，请你注册 index\n\n", .{});
     std.debug.print("zig-uymas  v{s}/{s}\n", .{ variable.Version, variable.Release });
 }
@@ -17,12 +17,12 @@ pub const App = struct {
     // 内存分配其
     allocator: std.mem.Allocator,
     // 入口函数
-    indexFn: *const fn (*const Arg) void = defaultIndexFn,
-    helpFn: ?*const fn (*const Arg) void = null,
+    indexFn: *const fn (*Arg) void = defaultIndexFn,
+    helpFn: ?*const fn (*Arg) void = null,
     args: ?*Arg = null,
 
     // 注册字典
-    registersMap: std.StringHashMap(*const fn (*const Arg) void),
+    registersMap: std.StringHashMap(*const fn (*Arg) void),
 
     /// 初始化应用
     pub fn new(allocator: std.mem.Allocator) App {
@@ -32,7 +32,7 @@ pub const App = struct {
         return App{
             .allocator = allocator,
             //.args = null,
-            .registersMap = std.StringHashMap(*const fn (*const Arg) void).init(allocator),
+            .registersMap = std.StringHashMap(*const fn (*Arg) void).init(allocator),
         };
     }
 
@@ -53,12 +53,12 @@ pub const App = struct {
     }
 
     /// 定义入口函数
-    pub fn index(self: *App, runFn: fn (*const Arg) void) void {
+    pub fn index(self: *App, runFn: fn (*Arg) void) void {
         self.indexFn = runFn;
     }
 
     /// 帮助命令
-    pub fn help(self: *App, runFn: fn (*const Arg) void) void {
+    pub fn help(self: *App, runFn: fn (*Arg) void) void {
         self.helpFn = runFn;
     }
 

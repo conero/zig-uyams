@@ -16,6 +16,9 @@
 
 > cli 功能实现
 
+- **cli**
+  - break: 将注册回调函数变量参数由`*const Arg`调整为`*Arg` 
+
 
 
 
