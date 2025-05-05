@@ -5,8 +5,8 @@ pub const Arg = struct {
     /// 命令
     command: []const u8 = "",
     osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
-    /// 选项
-    //options: [][:0]u8,
+    /// 选项列表
+    optionList: std.ArrayList([]const u8),
     allocator: ?std.mem.Allocator = null,
 
     /// 使用命令参数示例化参数
@@ -21,10 +21,19 @@ pub const Arg = struct {
     /// 指定参数列表来解析命令行
     pub fn args(argsList: [][:0]u8, allocator: std.mem.Allocator) Arg {
         var command: []u8 = "";
+        var optionList = std.ArrayList([]const u8).init(allocator);
         for (argsList, 0..) |arg, index| {
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
             if (dOpt.@"1") {
+                const rawOptName = dOpt.@"0";
+                if (allocator.dupe(u8, rawOptName)) |optName| {
+                    if (optionList.append(optName)) {} else |err| {
+                        std.debug.print("选中之入库错误，{?}\n", .{err});
+                    }
+                } else |err| {
+                    std.debug.print("选项之入库时值复制错误，{?}\n", .{err});
+                }
                 continue;
             }
             // 认定第一个参数为命令行
@@ -39,6 +48,7 @@ pub const Arg = struct {
             return Arg{
                 .command = cpName,
                 .allocator = allocator,
+                .optionList = optionList,
             };
         } else |err| {
             std.debug.print("command 值处理异常，{?}\n", .{err});
@@ -48,6 +58,7 @@ pub const Arg = struct {
         return Arg{
             .command = command,
             .allocator = allocator,
+            .optionList = optionList,
         };
     }
 
@@ -57,30 +68,52 @@ pub const Arg = struct {
         return self.command;
     }
 
+    /// 检测选是否存在
+    pub fn checkOpt(self: *const Arg, opts: [][]const u8) bool {
+        for (opts) |opt| {
+            if (std.mem.indexOf([]const u8, self.optionList.items, opt)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// 内存释放
     pub fn free(self: *Arg) void {
-        if (self.osArgsList) |osArgs| {
-            if (self.allocator) |allocator| {
+        if (self.allocator) |allocator| {
+            // 命令行参数释放
+            if (self.osArgsList) |osArgs| {
                 std.process.argsFree(allocator, osArgs);
             }
+            // 选项列表释放
+            self.optionList.deinit();
         }
     }
 };
 
-/// 检测变量是否为选项
-pub fn detectOption(vString: []u8, supportLong: bool) struct { []u8, bool } {
+/// 检测变量是否为选项，返回 => {option, isOption, value}
+pub fn detectOption(vString: []u8, supportLong: bool) struct { []u8, bool, ?[]u8 } {
     const vLen = vString.len;
     if (vLen == 0) {
-        return .{ "", false };
+        return .{ "", false, null };
     }
 
     // 长选项
     if (vLen > 1 and supportLong and std.mem.eql(u8, vString[0..2], "--")) {
-        return .{ vString[2..], true };
+        // 含等于
+        if (std.mem.indexOf(u8, vString, "=")) |index| {
+            return .{ vString[2..index], true, vString[index + 1 ..] };
+        }
+        return .{ vString[2..], true, null };
     }
 
     if (vString[0] == '-') {
-        return .{ vString[1..], true };
+        // 含等于
+        if (std.mem.indexOf(u8, vString, "=")) |index| {
+            return .{ vString[1..index], true, vString[index + 1 ..] };
+        }
+        return .{ vString[1..], true, null };
     }
-    return .{ "", false };
+    return .{ "", false, null };
 }
