@@ -45,7 +45,7 @@ fn testCmd(param: *uymas.cli.Arg) void {
     std.debug.print("---- test ---- \n", .{});
     _ = param.getCommand();
     // 异常：error.Unexpected: GetLastError(998): 内存位置访问无效。
-    std.debug.print("commond: {s}\n", .{param.getCommand()});
+    //std.debug.print("commond: {s}\n", .{param.getCommand()});
     std.debug.print("\n", .{});
 }
 

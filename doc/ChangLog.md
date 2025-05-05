@@ -18,6 +18,7 @@
 
 - **cli**
   - break: 将注册回调函数变量参数由`*const Arg`调整为`*Arg` 
+  - fix: 重写 Arg 实例化函数，并修复 `error.Unexpected: GetLastError(998): 内存位置访问无效` 的错误
 
 
 

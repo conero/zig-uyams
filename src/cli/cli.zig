@@ -73,23 +73,22 @@ pub const App = struct {
         //defer args.free();
         const vCommand = args.getCommand();
 
-        self.args = args;
-        // std.debug.print("vCommand: {s}, vlen: {d}\n", .{ vCommand, vCommand.len });
+        self.args = @constCast(&args);
         if (vCommand.len == 0) {
-            self.indexFn(args);
+            self.indexFn(self.args.?);
             return;
         }
 
         // 注册命令
         if (self.registersMap.get(vCommand)) |callFn| {
-            callFn(args);
+            callFn(self.args.?);
             return;
         }
 
         // 帮助命令
         if (std.mem.eql(u8, vCommand, "help") or std.mem.eql(u8, vCommand, "?")) {
             if (self.helpFn) |helpFn| {
-                helpFn(args);
+                helpFn(self.args.?);
                 return;
             }
         }
