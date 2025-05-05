@@ -14,14 +14,13 @@ pub const Arg = struct {
         const args_list = try std.process.argsAlloc(allocator);
         //defer std.process.argsFree(std.heap.c_allocator, args_list);
         var mySelf = Arg.args(args_list[1..]);
-        //mySelf.osArgsList = args_list;
         mySelf.osArgsList = args_list;
         mySelf.allocator = allocator;
         return mySelf;
     }
 
     /// 指定参数列表来解析命令行
-    pub fn args(argsList: [][:0]u8) *Arg {
+    pub fn args(argsList: [][:0]u8, allocator: std.mem.Allocator) *Arg {
         var command: []u8 = "";
         for (argsList, 0..) |arg, index| {
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
@@ -36,14 +35,28 @@ pub const Arg = struct {
             }
         }
 
-        var initArg = Arg{
+        // [实验性] 复制值到内存中，加不加与后再类似
+        if (allocator.dupe(u8, command)) |cpName| {
+            //std.debug.print("复制值1：{s}\n", .{cpName});
+            var initArg = Arg{
+                .command = cpName,
+                .allocator = allocator,
+            };
+            return &initArg;
+        } else |err| {
+            std.debug.print("command 值处理异常，{?}\n", .{err});
+        }
+
+        // 此语句与前面一样
+        var vArg = Arg{
             .command = command,
+            .allocator = allocator,
         };
-        return &initArg;
+        return &vArg;
     }
 
     /// 获取命令
-    pub fn getCommand(self: *Arg) []const u8 {
+    pub fn getCommand(self: *const Arg) []const u8 {
         //std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
         return self.command;
     }

@@ -65,7 +65,11 @@ pub const App = struct {
     // 运行命令程序
     pub fn run(self: *App) !void {
         // var args = try Arg.new(std.heap.c_allocator);
-        var args = try Arg.new(self.allocator);
+        //const args = try Arg.new(self.allocator);
+        const args_list = try std.process.argsAlloc(self.allocator);
+        defer std.process.argsFree(self.allocator, args_list);
+        const args = Arg.args(args_list[1..], self.allocator);
+
         //defer args.free();
         const vCommand = args.getCommand();
 

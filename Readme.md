@@ -10,7 +10,7 @@
 
 
 
-基于 zig 的基础库，以加深对zig 的学习
+基于 [zig](https://github.com/ziglang/zig) （版本v0.14.0） 的基础库，以加深对zig 的学习，官网地址：https://ziglang.org/ 。
 
 
 
