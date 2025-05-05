@@ -7,7 +7,10 @@ pub const Arg = struct {
     osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
     /// 选项列表
     optionList: std.ArrayList([]const u8),
+    /// 内存分配器
     allocator: ?std.mem.Allocator = null,
+    // 注册字典
+    optionKv: std.StringHashMap([]const u8),
 
     /// 使用命令参数示例化参数
     pub fn new(allocator: std.mem.Allocator) !Arg {
@@ -22,11 +25,13 @@ pub const Arg = struct {
     pub fn args(argsList: [][:0]u8, allocator: std.mem.Allocator) Arg {
         var command: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
+        var optionKv = std.StringHashMap([]const u8).init(allocator);
         for (argsList, 0..) |arg, index| {
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
             if (dOpt.@"1") {
                 const rawOptName = dOpt.@"0";
+                // 选项表写入
                 if (allocator.dupe(u8, rawOptName)) |optName| {
                     if (optionList.append(optName)) {} else |err| {
                         std.debug.print("选中之入库错误，{?}\n", .{err});
@@ -34,6 +39,13 @@ pub const Arg = struct {
                 } else |err| {
                     std.debug.print("选项之入库时值复制错误，{?}\n", .{err});
                 }
+                // 选项键值对写入
+                if (dOpt.@"2") |optValue| {
+                    optionKv.put(rawOptName, optValue) catch |err| {
+                        std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
+                    };
+                }
+
                 continue;
             }
             // 认定第一个参数为命令行
@@ -49,6 +61,7 @@ pub const Arg = struct {
                 .command = cpName,
                 .allocator = allocator,
                 .optionList = optionList,
+                .optionKv = optionKv,
             };
         } else |err| {
             std.debug.print("command 值处理异常，{?}\n", .{err});
@@ -59,6 +72,7 @@ pub const Arg = struct {
             .command = command,
             .allocator = allocator,
             .optionList = optionList,
+            .optionKv = optionKv,
         };
     }
 
@@ -88,6 +102,8 @@ pub const Arg = struct {
             }
             // 选项列表释放
             self.optionList.deinit();
+            // 键值对释放
+            self.optionKv.deinit();
         }
     }
 };
