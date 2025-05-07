@@ -42,10 +42,34 @@ fn helpCmd(_: *uymas.cli.Arg) void {
 
 // 帮助文件信息
 fn testCmd(param: *uymas.cli.Arg) void {
+    // 内存分配
+    // @todo 内存泄露
+    // 使用模型，一定要是变量，不能是常量
+    //var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    // 拿到一个allocator
+    // const allocator = gpa.allocator();
+    // defer 用于执行general_purpose_allocator善后工作
+    // defer {
+    //    const deinit_status = gpa.deinit();
+    //    if (deinit_status == .leak) @panic("TEST FAIL");
+    //}
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    // 业务执行
     std.debug.print("---- test ---- \n", .{});
-    _ = param.getCommand();
     // 异常：error.Unexpected: GetLastError(998): 内存位置访问无效。
-    //std.debug.print("commond: {s}\n", .{param.getCommand()});
+    std.debug.print("commond: {s}\n", .{param.getCommand()});
+
+    // 选项
+    const optList = param.getOptList();
+    if (std.mem.join(allocator, ", ", optList)) |joinOpt| {
+        std.debug.print("option: {s}\n", .{joinOpt});
+    } else |err| {
+        std.debug.print("option join 错误，{?}", .{err});
+    }
     std.debug.print("\n", .{});
 }
 

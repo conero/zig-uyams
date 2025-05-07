@@ -78,8 +78,12 @@ pub const Arg = struct {
 
     /// 获取命令
     pub fn getCommand(self: *const Arg) []const u8 {
-        //std.debug.print("self.command: {s}, len: {d}\n", .{ self.command, self.command.len });
         return self.command;
+    }
+
+    /// 获取选项列表
+    pub fn getOptList(self: *const Arg) [][]const u8 {
+        return self.optionList.items;
     }
 
     /// 检测选是否存在

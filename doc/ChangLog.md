@@ -19,8 +19,12 @@
 - **cli**
   - feat: 新增方法 Arg.checkOpt 用于检测选项是否存在
   - feat: Arg 支持选项键值对存储
+  - feat: Arg 新增方法 getOptList 用于获取属性列表
   - break: 将注册回调函数变量参数由`*const Arg`调整为`*Arg` 
   - fix: 重写 Arg 实例化函数，并修复 `error.Unexpected: GetLastError(998): 内存位置访问无效` 的错误
+- **example/demo**
+  - pref: test 命令加入选项值输出
+
 
 
 
