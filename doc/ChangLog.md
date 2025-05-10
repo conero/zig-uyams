@@ -9,6 +9,16 @@
 ### todo
 
 - [ ] `#250503`  zig build 在 ReleaseFast及ReleaseSmall无效（无输出）
+- [ ] `#250510`  新增基础方法用于统计程序运行时间消耗
+
+
+
+### v0.1.0/dev
+
+> 功能实现，使其基本可用于命令行程序
+
+- **cli**
+  - feat/break: 新增 `checkOptList` 方法并调整 `checkOpt` 使用用于检测选项是否存在
 
 
 

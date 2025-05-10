@@ -26,7 +26,11 @@ pub fn main() !void {
 }
 
 // 默认入口
-fn indexCmd(_: *uymas.cli.Arg) void {
+fn indexCmd(arg: *uymas.cli.Arg) void {
+    if (arg.checkOpt("test")) {
+        testCmd(arg);
+        return;
+    }
     std.debug.print("这是 zig uymas 命令行基础程序\n\n", .{});
     std.debug.print("巧巧，你好呀\n", .{});
     std.debug.print("数据类型：{}\n", .{@TypeOf(uymas.Version)});
@@ -42,7 +46,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
 }
 
 // 测试命令
-fn testCmd(param: *uymas.cli.Arg) void {
+fn testCmd(arg: *uymas.cli.Arg) void {
     // 内存分配
     // @todo 内存泄露
     // 使用模型，一定要是变量，不能是常量
@@ -62,10 +66,10 @@ fn testCmd(param: *uymas.cli.Arg) void {
     // 业务执行
     std.debug.print("---- test ---- \n", .{});
     // 异常：error.Unexpected: GetLastError(998): 内存位置访问无效。
-    std.debug.print("commond: {s}\n", .{param.getCommand()});
+    std.debug.print("commond: {s}\n", .{arg.getCommand()});
 
     // 选项
-    const optList = param.getOptList();
+    const optList = arg.getOptList();
     if (std.mem.join(allocator, ", ", optList)) |joinOpt| {
         std.debug.print("option({d}): {s}\n", .{ optList.len, joinOpt });
     } else |err| {

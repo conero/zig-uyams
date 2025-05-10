@@ -88,7 +88,23 @@ pub const Arg = struct {
     }
 
     /// 检测选是否存在
-    pub fn checkOpt(self: *const Arg, opts: [][]const u8) bool {
+    pub fn checkOpt(self: *const Arg, opt: []const u8) bool {
+        // 此处报错
+        // if (std.mem.indexOf([]const u8, self.optionList.items, opt)) {
+        //     return true;
+        // }
+
+        for (self.optionList.items) |refOpt| {
+            if (std.mem.eql(u8, refOpt, opt)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// 检测选是否存在
+    pub fn checkOptList(self: *const Arg, opts: [][]const u8) bool {
         for (opts) |opt| {
             if (std.mem.indexOf([]const u8, self.optionList.items, opt)) {
                 return true;

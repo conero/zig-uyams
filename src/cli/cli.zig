@@ -75,6 +75,12 @@ pub const App = struct {
 
         self.args = @constCast(&args);
         if (vCommand.len == 0) {
+            if (self.args.?.checkOpt("help")) {
+                if (self.helpFn) |helpFn| {
+                    helpFn(self.args.?);
+                    return;
+                }
+            }
             self.indexFn(self.args.?);
             return;
         }
