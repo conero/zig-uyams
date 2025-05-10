@@ -4,12 +4,13 @@ const std = @import("std");
 pub const Arg = struct {
     /// 命令
     command: []const u8 = "",
-    osArgsList: ?[][:0]u8 = null, // 操作系统命令列表
+    /// 操作系统命令列表
+    osArgsList: ?[][:0]u8 = null,
     /// 选项列表
     optionList: std.ArrayList([]const u8),
     /// 内存分配器
     allocator: ?std.mem.Allocator = null,
-    // 注册字典
+    /// 注册字典
     optionKv: std.StringHashMap([]const u8),
 
     /// 使用命令参数示例化参数

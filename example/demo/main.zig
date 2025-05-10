@@ -25,14 +25,15 @@ pub fn main() !void {
     try app.run();
 }
 
+// 默认入口
 fn indexCmd(_: *uymas.cli.Arg) void {
-    std.debug.print("uymas 命令行程序\n", .{});
+    std.debug.print("这是 zig uymas 命令行基础程序\n\n", .{});
     std.debug.print("巧巧，你好呀\n", .{});
     std.debug.print("数据类型：{}\n", .{@TypeOf(uymas.Version)});
     std.debug.print("\n\n版本信息： v{s}/{s}\n", .{ uymas.Version, uymas.Release });
 }
 
-// 帮助文件信息
+// 帮助命令
 fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
     std.debug.print("  test    测试命令\n", .{});
@@ -40,7 +41,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("\n", .{});
 }
 
-// 帮助文件信息
+// 测试命令
 fn testCmd(param: *uymas.cli.Arg) void {
     // 内存分配
     // @todo 内存泄露
@@ -66,7 +67,7 @@ fn testCmd(param: *uymas.cli.Arg) void {
     // 选项
     const optList = param.getOptList();
     if (std.mem.join(allocator, ", ", optList)) |joinOpt| {
-        std.debug.print("option: {s}\n", .{joinOpt});
+        std.debug.print("option({d}): {s}\n", .{ optList.len, joinOpt });
     } else |err| {
         std.debug.print("option join 错误，{?}", .{err});
     }
