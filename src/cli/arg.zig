@@ -12,6 +12,8 @@ pub const Arg = struct {
     allocator: ?std.mem.Allocator = null,
     /// 注册字典
     optionKv: std.StringHashMap([]const u8),
+    /// 属性字典存储字典，用于保存多值
+    optionKvEntry: std.StringHashMap([][]const u8),
 
     /// 使用命令参数示例化参数
     pub fn new(allocator: std.mem.Allocator) !Arg {
@@ -27,6 +29,7 @@ pub const Arg = struct {
         var command: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
         var optionKv = std.StringHashMap([]const u8).init(allocator);
+        var optionKvEntry = std.StringHashMap([][]const u8).init(allocator);
         for (argsList, 0..) |arg, index| {
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
@@ -45,6 +48,28 @@ pub const Arg = struct {
                     optionKv.put(rawOptName, optValue) catch |err| {
                         std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
                     };
+                    if (optionKvEntry.contains(rawOptName)) {
+                        var entryValue = std.ArrayList([]const u8).init(allocator);
+                        for (optionKvEntry.get(rawOptName).?) |childValue| {
+                            entryValue.append(childValue) catch |err| {
+                                std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
+                            };
+                        }
+                        entryValue.append(optValue) catch |err| {
+                            std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
+                        };
+                        optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
+                            std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                        };
+                    } else {
+                        var entryValue = std.ArrayList([]const u8).init(allocator);
+                        entryValue.append(optValue) catch |err| {
+                            std.debug.print("optionKv 值写追加错误，新建，{?}\n", .{err});
+                        };
+                        optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
+                            std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                        };
+                    }
                 }
 
                 continue;
@@ -63,6 +88,7 @@ pub const Arg = struct {
                 .allocator = allocator,
                 .optionList = optionList,
                 .optionKv = optionKv,
+                .optionKvEntry = optionKvEntry,
             };
         } else |err| {
             std.debug.print("command 值处理异常，{?}\n", .{err});
@@ -74,6 +100,7 @@ pub const Arg = struct {
             .allocator = allocator,
             .optionList = optionList,
             .optionKv = optionKv,
+            .optionKvEntry = optionKvEntry,
         };
     }
 
