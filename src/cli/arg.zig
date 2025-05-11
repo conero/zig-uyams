@@ -10,8 +10,6 @@ pub const Arg = struct {
     optionList: std.ArrayList([]const u8),
     /// 内存分配器
     allocator: ?std.mem.Allocator = null,
-    /// 注册字典
-    optionKv: std.StringHashMap([]const u8),
     /// 属性字典存储字典，用于保存多值
     optionKvEntry: std.StringHashMap([][]const u8),
 
@@ -28,7 +26,6 @@ pub const Arg = struct {
     pub fn args(argsList: [][:0]u8, allocator: std.mem.Allocator) Arg {
         var command: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
-        var optionKv = std.StringHashMap([]const u8).init(allocator);
         var optionKvEntry = std.StringHashMap([][]const u8).init(allocator);
         for (argsList, 0..) |arg, index| {
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
@@ -45,9 +42,6 @@ pub const Arg = struct {
                 }
                 // 选项键值对写入
                 if (dOpt.@"2") |optValue| {
-                    optionKv.put(rawOptName, optValue) catch |err| {
-                        std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
-                    };
                     if (optionKvEntry.contains(rawOptName)) {
                         var entryValue = std.ArrayList([]const u8).init(allocator);
                         for (optionKvEntry.get(rawOptName).?) |childValue| {
@@ -87,7 +81,6 @@ pub const Arg = struct {
                 .command = cpName,
                 .allocator = allocator,
                 .optionList = optionList,
-                .optionKv = optionKv,
                 .optionKvEntry = optionKvEntry,
             };
         } else |err| {
@@ -99,7 +92,6 @@ pub const Arg = struct {
             .command = command,
             .allocator = allocator,
             .optionList = optionList,
-            .optionKv = optionKv,
             .optionKvEntry = optionKvEntry,
         };
     }
@@ -151,7 +143,7 @@ pub const Arg = struct {
             // 选项列表释放
             self.optionList.deinit();
             // 键值对释放
-            self.optionKv.deinit();
+            self.optionKvEntry.deinit();
         }
     }
 };
