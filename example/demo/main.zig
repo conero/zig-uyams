@@ -59,6 +59,10 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     //    if (deinit_status == .leak) @panic("TEST FAIL");
     //}
 
+    const spendFn = uymas.util.spendFn();
+    defer {
+        std.debug.print("耗时：{d:.2}s\n", .{spendFn.secondEnd()});
+    }
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();

@@ -16,17 +16,17 @@ pub fn spendFn() type {
 
         /// 计算微妙
         pub fn microEnd(self: Self) f64 {
-            return self.nanoEnd() / 1000;
+            return @as(f64, self.nanoEnd()) / 1000.0;
         }
 
         /// 计算milliseconds-毫秒
         pub fn milliEnd(self: Self) f64 {
-            return self.nanoEnd() / 1000000;
+            return @as(f64, self.nanoEnd()) / 1000_000.0;
         }
 
         /// 秒
         pub fn secondEnd(self: Self) f64 {
-            return self.nanoEnd() / 1000000000;
+            return @as(f64, self.nanoEnd()) / 1000_000_000.0;
         }
     };
 }
