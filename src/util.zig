@@ -7,26 +7,33 @@ const std = @import("std");
 pub fn spendFn() type {
     return struct {
         const Self = @This();
-        start: i128 = std.time.nanoTimestamp(),
+        start: i128,
 
-        /// 计算结束统计时间-纳秒
+        /// 计算结束统计时间-纳秒, ns
         pub fn nanoEnd(self: Self) i128 {
             return std.time.nanoTimestamp() - self.start;
         }
 
-        /// 计算微妙
+        /// 计算微妙, μs
         pub fn microEnd(self: Self) f64 {
-            return @as(f64, self.nanoEnd()) / 1000.0;
+            return @floatFromInt(@divTrunc(self.nanoEnd(), 1000));
         }
 
-        /// 计算milliseconds-毫秒
+        /// 计算milliseconds-毫秒, ms
         pub fn milliEnd(self: Self) f64 {
-            return @as(f64, self.nanoEnd()) / 1000_000.0;
+            return @floatFromInt(@divTrunc(self.nanoEnd(), 1000_000));
         }
 
-        /// 秒
+        /// 秒, s
         pub fn secondEnd(self: Self) f64 {
-            return @as(f64, self.nanoEnd()) / 1000_000_000.0;
+            return @floatFromInt(@divTrunc(self.nanoEnd(), 1000_000_000));
+        }
+
+        /// 及时其开始运行
+        pub fn begin() Self {
+            return .{
+                .start = std.time.nanoTimestamp(),
+            };
         }
     };
 }
