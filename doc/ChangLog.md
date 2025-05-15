@@ -20,6 +20,7 @@
 - **cli**
   - feat/break: 新增 `checkOptList` 方法并调整 `checkOpt` 使用用于检测选项是否存在
   - feat: 新增 Arg 属性用于保存KV键值对数据
+  - feat: Arg 新增 get/getInt 方法用于获取选项值
 - **util** (新增)
   - feat: 新增函数 `spendFn` 用于计算程序运行时间耗时
 
