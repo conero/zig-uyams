@@ -135,20 +135,25 @@ pub const Arg = struct {
 
     // 选项数据获取
     pub fn get(self: *const Arg, opt: []const u8) ?[]u8 {
+        const allocator = self.allocator.?;
         if (self.optionKvEntry.get(opt)) |value| {
-            return std.mem.join(self.allocator, " ", value) catch |err| {
+            return std.mem.join(allocator, " ", value) catch |err| {
                 std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                return null;
             };
         }
         return null;
     }
 
     // 获取选项数据（整形）
-    pub fn getInt(self: *const Arg, opt: []const u8) !isize {
+    pub fn getInt(self: *const Arg, opt: []const u8) ?isize {
         if (self.get(opt)) |value| {
-            return try std.fmt.parseInt([]u8, value, 10);
+            return std.fmt.parseInt(isize, value, 10) catch |err| {
+                std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                return null;
+            };
         }
-        return 0;
+        return null;
     }
 
     /// 内存释放

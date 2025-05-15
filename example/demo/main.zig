@@ -40,8 +40,9 @@ fn indexCmd(arg: *uymas.cli.Arg) void {
 // 帮助命令
 fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
-    std.debug.print("  test    测试命令\n", .{});
-    std.debug.print("  demo    示例多命令注册（dm）\n", .{});
+    std.debug.print("  test            测试命令\n", .{});
+    std.debug.print("       -for       用于测试循环多次花费的时间\n", .{});
+    std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("\n", .{});
 }
 
@@ -64,6 +65,15 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     defer {
         std.debug.print("耗时：{d:.3}ms\n", .{spendFn.milliEnd()});
     }
+
+    // for 循环
+    if (arg.getInt("for")) |forNum| {
+        const forNumPos = @as(usize, @intCast(forNum)); // 正整数
+        for (0..forNumPos) |_| {}
+        std.debug.print("本次已完成 {d} 次循环\n", .{forNum});
+        return;
+    }
+
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
