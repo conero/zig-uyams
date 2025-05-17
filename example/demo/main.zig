@@ -42,6 +42,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
     std.debug.print("  test            测试命令\n", .{});
     std.debug.print("       -for       用于测试循环多次花费的时间\n", .{});
+    std.debug.print("       -print,-P  是否输出结果\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("\n", .{});
 }
@@ -61,6 +62,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     //}
 
     const spendFn = uymas.util.spendFn().begin();
+    const isPrint = arg.checkOpt("print") || arg.checkOpt("P");
     //var spendFunc: sendFn = spendFn.begin();
     defer {
         std.debug.print("耗时：{d:.3}ms\n", .{spendFn.milliEnd()});
@@ -69,7 +71,12 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     // for 循环
     if (arg.getInt("for")) |forNum| {
         const forNumPos = @as(usize, @intCast(forNum)); // 正整数
-        for (0..forNumPos) |_| {}
+        for (0..forNumPos) |vN| {
+            if (!isPrint) {
+                continue;
+            }
+            std.debug.print("{d} ", .{vN});
+        }
         std.debug.print("本次已完成 {d} 次循环\n", .{forNum});
         return;
     }

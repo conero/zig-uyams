@@ -42,28 +42,21 @@ pub const Arg = struct {
                 }
                 // 选项键值对写入
                 if (dOpt.@"2") |optValue| {
+                    var entryValue = std.ArrayList([]const u8).init(allocator);
                     if (optionKvEntry.contains(rawOptName)) {
-                        var entryValue = std.ArrayList([]const u8).init(allocator);
                         for (optionKvEntry.get(rawOptName).?) |childValue| {
                             entryValue.append(childValue) catch |err| {
                                 std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
                             };
                         }
-                        entryValue.append(optValue) catch |err| {
-                            std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
-                        };
-                        optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
-                            std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
-                        };
-                    } else {
-                        var entryValue = std.ArrayList([]const u8).init(allocator);
-                        entryValue.append(optValue) catch |err| {
-                            std.debug.print("optionKv 值写追加错误，新建，{?}\n", .{err});
-                        };
-                        optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
-                            std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
-                        };
                     }
+                    entryValue.append(optValue) catch |err| {
+                        std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
+                    };
+                    optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
+                        std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                    };
+                    std.debug.print("[tmpMark] optionKv 值写追加成功kb:\nkey={s}, value={s}\n", .{ optValue, optValue });
                 }
 
                 continue;
