@@ -24,6 +24,9 @@
   - pref: Arg 选项解析完善，支持 “-key value value” 的解析
 - **util** (新增)
   - feat: 新增函数 `spendFn` 用于计算程序运行时间耗时
+- **number**（新增）
+  - feat: 新增函数 `strToInt` 实现字符串转数字
+
 
 
 
