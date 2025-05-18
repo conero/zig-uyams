@@ -62,8 +62,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     //}
 
     const spendFn = uymas.util.spendFn().begin();
-    const isPrint = arg.checkOpt("print") || arg.checkOpt("P");
-    //var spendFunc: sendFn = spendFn.begin();
+    const isPrint = arg.checkOpt("print") or arg.checkOpt("P");
     defer {
         std.debug.print("耗时：{d:.3}ms\n", .{spendFn.milliEnd()});
     }

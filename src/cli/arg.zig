@@ -27,7 +27,11 @@ pub const Arg = struct {
         var command: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
         var optionKvEntry = std.StringHashMap([][]const u8).init(allocator);
+        var lastOpt: []u8 = ""; // 最终的选项
         for (argsList, 0..) |arg, index| {
+            if (arg.len == 0) { // 空字符串不处理
+                continue;
+            }
             //std.debug.print(" => {d} -> {s}\n", .{ index, arg });
             const dOpt = detectOption(arg, true);
             if (dOpt.@"1") {
@@ -59,12 +63,32 @@ pub const Arg = struct {
                     std.debug.print("[tmpMark] optionKv 值写追加成功kb:\nkey={s}, value={s}\n", .{ optValue, optValue });
                 }
 
+                lastOpt = rawOptName;
                 continue;
             }
             // 认定第一个参数为命令行
             if (command.len == 0 and index == 0) {
                 //std.debug.print("arg: {s}\n", .{arg});
                 command = arg;
+                continue;
+            }
+
+            // 选项值记录
+            if (lastOpt.len > 0) {
+                var entryValue = std.ArrayList([]const u8).init(allocator);
+                if (optionKvEntry.contains(lastOpt)) {
+                    for (optionKvEntry.get(lastOpt).?) |childValue| {
+                        entryValue.append(childValue) catch |err| {
+                            std.debug.print("选项键值对入库时值错误，{?}\n", .{err});
+                        };
+                    }
+                }
+                entryValue.append(arg) catch |err| {
+                    std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
+                };
+                optionKvEntry.put(lastOpt, entryValue.items) catch |err| {
+                    std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                };
             }
         }
 
