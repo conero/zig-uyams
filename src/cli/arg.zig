@@ -1,4 +1,5 @@
 const std = @import("std");
+const number = @import("../number.zig");
 
 /// 命令解析
 pub const Arg = struct {
@@ -165,10 +166,17 @@ pub const Arg = struct {
     // 获取选项数据（整形）
     pub fn getInt(self: *const Arg, opt: []const u8) ?isize {
         if (self.get(opt)) |value| {
-            return std.fmt.parseInt(isize, value, 10) catch |err| {
-                std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
-                return null;
-            };
+            if (self.allocator) |alloc| {
+                const vNumber = number.strToInt(alloc, value);
+                if (vNumber > 0) {
+                    return vNumber;
+                }
+            } else {
+                return std.fmt.parseInt(isize, value, 10) catch |err| {
+                    std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                    return null;
+                };
+            }
         }
         return null;
     }
