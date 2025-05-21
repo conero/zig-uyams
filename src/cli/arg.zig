@@ -168,7 +168,7 @@ pub const Arg = struct {
         if (self.get(opt)) |value| {
             if (self.allocator) |alloc| {
                 const vNumber = number.strToInt(alloc, value);
-                if (vNumber > 0) {
+                if (vNumber != 0) {
                     return vNumber;
                 }
             } else {

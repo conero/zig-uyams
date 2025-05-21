@@ -45,7 +45,16 @@ pub fn strToInt(alloc: std.mem.Allocator, vNumber: []const u8) isize {
         return floatToInt;
     }
 
-    // 不含基数，支持 int 转 int
+    // 含 . 则转 float
+    if (std.mem.indexOfScalar(u8, support1, '.')) |_| {
+        const vF64 = std.fmt.parseFloat(f64, support1) catch |err| {
+            std.debug.print("字符串转数字错误，{any}\n", .{err});
+            return 0;
+        };
+        return @intFromFloat(vF64);
+    }
+
+    // 不含基数，支持 string 转 int
     const value = std.fmt.parseInt(isize, support1, 10) catch |err| {
         std.debug.print("字符串转数字错误，{any}\n", .{err});
         return 0;
@@ -70,4 +79,8 @@ test "strToInt base test" {
     // case 4
     vNum = strToInt(std.heap.smp_allocator, "3.14K");
     try std.testing.expectEqual(vNum, 3140);
+
+    // case 5
+    vNum = strToInt(std.heap.smp_allocator, "68.762391");
+    try std.testing.expectEqual(vNum, 68);
 }

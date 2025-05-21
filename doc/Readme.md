@@ -53,3 +53,4 @@ zig build -Doptimize=ReleaseSmall -Dtarget=x86_64-linux-gnu
 #### 参考
 
 - [【实战进阶】用Zig高效引入外部库，打造专属命令行神器！](https://blog.csdn.net/xiaodeshi/article/details/139704110)
+- 中国 zig 社区，https://github.com/zigcc
