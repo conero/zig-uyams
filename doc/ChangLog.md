@@ -26,7 +26,8 @@
 - **util** (新增)
   - feat: 新增函数 `spendFn` 用于计算程序运行时间耗时
 - **number**（新增）
-  - feat: 新增函数 `strToInt` 实现字符串转数字
+  - feat: 新增函数 `strToInt` 实现字符串转 int
+  - feat: 新增函数 `strToF64` 实现字符串转 float64
 
 
 
