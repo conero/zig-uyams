@@ -184,6 +184,11 @@ pub const Arg = struct {
     // 获取选项数据（整形）
     pub fn getF64(self: *const Arg, opt: []const u8) ?f64 {
         if (self.get(opt)) |value| {
+            if (self.allocator) |alloc| {
+                if (number.strToF64(alloc, value)) |vNumber| {
+                    return vNumber;
+                }
+            }
             return std.fmt.parseFloat(f64, value) catch |err| {
                 std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
                 return null;
