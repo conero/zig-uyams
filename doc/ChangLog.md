@@ -28,6 +28,7 @@
 - **number**（新增）
   - feat: 新增函数 `strToInt` 实现字符串转 int
   - feat: 新增函数 `strToF64` 实现字符串转 float64
+  - feat: 新增函数 `simplify` 用于对数字进行压缩
 
 
 

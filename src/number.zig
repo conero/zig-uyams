@@ -125,6 +125,45 @@ pub fn strToF64(alloc: std.mem.Allocator, vNumber: []const u8) ?f64 {
     return @floatFromInt(value * base);
 }
 
+/// 数字压缩或简化，如 1000 转为 1K，10000 转为 10W
+pub fn simplify(alloc: std.mem.Allocator, vNumber: isize) []u8 {
+    var simStr: []u8 = undefined;
+    if (std.fmt.allocPrint(alloc, "{d}", .{vNumber})) |baseStr| {
+        simStr = baseStr;
+    } else |err| {
+        std.debug.print("字符串转数字错误，{any}\n", .{err});
+        simStr = "";
+    }
+    const asF64: f64 = @floatFromInt(vNumber);
+    if (vNumber >= 1_000_000_000) {
+        const value: f64 = asF64 / 1_000_000_000;
+        if (std.fmt.allocPrint(alloc, "{d}B", .{value})) |baseStr| {
+            simStr = baseStr;
+        } else |err| {
+            std.debug.print("字符串转数字错误，{any}\n", .{err});
+            return simStr;
+        }
+    } else if (vNumber >= 1_000_000) {
+        const value: f64 = asF64 / 1_000_000;
+        if (std.fmt.allocPrint(alloc, "{d}M", .{value})) |baseStr| {
+            simStr = baseStr;
+        } else |err| {
+            std.debug.print("字符串转数字错误，{any}\n", .{err});
+            return simStr;
+        }
+    } else if (vNumber >= 1_000) {
+        const value: f64 = asF64 / 1_000;
+        if (std.fmt.allocPrint(alloc, "{d}K", .{value})) |baseStr| {
+            simStr = baseStr;
+        } else |err| {
+            std.debug.print("字符串转数字错误，{any}\n", .{err});
+            return simStr;
+        }
+    }
+
+    return simStr;
+}
+
 test "strToInt base test" {
     // case 1
     var vNum = strToInt(std.heap.smp_allocator, "100_000");
@@ -167,4 +206,12 @@ test "strToF64 base test" {
     // case 5
     vNum = strToF64(std.heap.smp_allocator, "68.762391");
     try std.testing.expectEqual(vNum, 68);
+}
+
+test "simplify base test" {
+    var vNum = simplify(std.heap.smp_allocator, 100000);
+    try std.testing.expectEqualSlices(u8, vNum, "100K");
+
+    vNum = simplify(std.heap.smp_allocator, 1992);
+    try std.testing.expectEqualSlices(u8, vNum, "1.992K");
 }
