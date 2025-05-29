@@ -74,8 +74,10 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             if (!isPrint) {
                 continue;
             }
-            std.debug.print("{d} ", .{vN});
+            // 「\r」  回车(CR) ，将当前位置移到本行开头
+            std.debug.print("\rIndex: {d} ", .{vN + 1});
         }
+        std.debug.print("\n\n", .{});
         std.debug.print("本次已完成 {d} 次循环\n", .{forNum});
         return;
     }
@@ -96,6 +98,14 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     } else |err| {
         std.debug.print("option join 错误，{?}", .{err});
     }
+
+    // cwd
+    if (std.process.getCwdAlloc(allocator)) |cwdPath| {
+        std.debug.print("CWD: {s}\n", .{cwdPath});
+    } else |err| {
+        std.debug.print("CWD 获取错误，{?}", .{err});
+    }
+
     std.debug.print("\n", .{});
 }
 

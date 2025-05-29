@@ -9,7 +9,8 @@
 ### todo
 
 - [ ] `#250503`  zig build 在 ReleaseFast及ReleaseSmall无效（无输出）
-- [ ] `#250510`  新增基础方法用于统计程序运行时间消耗
+- [x] `#250510`  新增基础方法用于统计程序运行时间消耗
+- [ ] `#250530` 新增日期个格式化已经获取本地时间的方法
 
 
 
@@ -29,6 +30,9 @@
   - feat: 新增函数 `strToInt` 实现字符串转 int
   - feat: 新增函数 `strToF64` 实现字符串转 float64
   - feat: 新增函数 `simplify` 用于对数字进行压缩
+- **example/demo**
+  - pref: test 命令加入 cmd 展示已经for测试时输出 \r 格式
+
 
 
 
