@@ -15,6 +15,8 @@ pub const Release = variable.Release;
 pub const util = @import("util.zig");
 /// 数字处理库
 pub const number = @import("number.zig");
+/// 日期处理库
+pub const date = @import("date.zig");
 // 原示例代码
 pub fn add(a: i32, b: i32) i32 {
     return a + b;
