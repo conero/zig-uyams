@@ -60,6 +60,16 @@ pub const Date = struct {
         };
     }
 
+    /// 获取时间基于 Unix 的秒时间
+    pub fn fromStamp(stamp: i128) Date {
+        return Date.fromNano(stamp * 1000_000_000);
+    }
+
+    /// 获取时间基于 Unix 的微秒时间
+    pub fn fromMicro(stamp: i128) Date {
+        return Date.fromNano(stamp * 1000_000);
+    }
+
     /// 设置日期周期
     pub fn timeZone(self: *Date, tz: usize) *Date {
         self.utcTz = tz;
@@ -102,6 +112,32 @@ pub const Date = struct {
             self.minute,
             self.second,
         }) catch unreachable;
+    }
+
+    /// 返回时间字符串
+    pub fn timeStringTz(self: *Date, alloc: std.mem.Allocator, tzIndex: isize) []u8 {
+        var hour: isize = @intCast(self.hour);
+
+        // 区间小一天
+        if (tzIndex < 0) {
+            hour += tzIndex;
+        } else {
+            hour += tzIndex;
+            if (hour >= 24) {
+                hour -= 24;
+            }
+        }
+
+        return std.fmt.allocPrintZ(alloc, "{:0>2}:{:0>2}:{:0>2}", .{
+            @as(usize, @intCast(hour)),
+            self.minute,
+            self.second,
+        }) catch unreachable;
+    }
+
+    /// 返回日期字符串
+    pub fn timeString(self: *Date, alloc: std.mem.Allocator) []u8 {
+        return self.timeStringTz(alloc, self.utcTz);
     }
 };
 
@@ -210,8 +246,14 @@ pub fn getDaysInMonth(leap_year: time.epoch.YearLeapKind, month: usize) u5 {
 
 test "Date.now base test" {
     var now = Date.now();
+    const testing = std.testing;
     std.debug.print("\n", .{});
     std.debug.print("中国时间: {s}\n", .{now.cnTime().toString(std.heap.smp_allocator)});
     std.debug.print("UTC 时间: {s}\n", .{now.cnTime().toStringTz(std.heap.smp_allocator, 0)});
     std.debug.print("nano: {d}\n", .{now.nano});
+
+    // 指定日期计算
+    var date = Date.fromNano(867768559000_000_000);
+    std.debug.print("unix 时间戳中国时间: {s}\n", .{date.cnTime().toString(std.heap.smp_allocator)});
+    try testing.expect(date.year == 1997);
 }
