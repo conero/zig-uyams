@@ -34,6 +34,7 @@
   - feat: 新增函数 `strToF64` 实现字符串转 float64
   - feat: 新增函数 `simplify` 用于对数字进行压缩
 - **example/demo**
+  - feat: 新增 `time` 命令用于生成当前时间
   - pref: test 命令加入 cmd 展示已经for测试时输出 \r 格式
 
 

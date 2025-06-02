@@ -15,6 +15,7 @@ pub fn main() !void {
 
     // test
     _ = app.command("test", testCmd);
+    _ = app.command("time", timeCmd);
     // 命令注册
     // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
     const vDemoCmd = [_][]const u8{ "demo", "dm" };
@@ -44,6 +45,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("       -for       用于测试循环多次花费的时间\n", .{});
     std.debug.print("       -print,-P  是否输出结果\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
+    std.debug.print("  time            实时显示当前时间\n", .{});
+    std.debug.print("       -tz [UTC]  指定时区\n", .{});
     std.debug.print("\n", .{});
 }
 
@@ -107,9 +110,6 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     }
 
     std.debug.print("\n", .{});
-
-    // test
-    get_time_str();
 }
 
 // demo 命令
@@ -118,49 +118,13 @@ fn demoCmd(_: *uymas.cli.Arg) void {
     std.debug.print("这是一个示例命令……", .{});
 }
 
-// [实验性的]
-// @todo 应该删除 <Should-Delete>
-// 计算当前时间字符串
-fn get_time_str() void {
-    // 1970-01-01 00:00:00.000000000 UTC
-    const nano = std.time.nanoTimestamp();
-    std.debug.print("纳秒：{d}\n", .{nano});
-
-    // s
-    const nano_f128: f128 = @floatFromInt(nano);
-    const latest_sec: f128 = nano_f128 / 1_000_000_000;
-
-    //const latest_sec: f128 = @floatFromInt(nano) / 1_000_000_000;
-    std.debug.print("秒：{d:.7}\n", .{latest_sec});
-
-    // day
-    const latest_day: f128 = latest_sec / (24 * 3600);
-    std.debug.print("天：{d:.7}\n", .{latest_day});
-
-    // year
-    const latest_year: f128 = latest_day / 365;
-    std.debug.print("年+：{d:.7}\n", .{latest_year});
-
-    // 年份计算
-    const latest_year_int: isize = @intFromFloat(latest_year);
-    const full_year = latest_year_int + 1970;
-    std.debug.print("整数年：{d}\n", .{full_year});
-    std.debug.print("\n\n", .{});
-
-    // 月份计算
-    const latest_month: f128 = (latest_year - @as(f128, @floatFromInt(latest_year_int)));
-    const latest_month_days = latest_month * 365;
-    std.debug.print("月(年)+：{d:.7}\n", .{latest_month});
-    std.debug.print("月(天)+：{d:.7}\n", .{latest_month_days});
-    const latest_month_int: isize = @intFromFloat(latest_month_days / 30);
-    const full_month = latest_month_int + 1;
-    std.debug.print("整数月：{d}\n", .{full_month});
-
-    // 日期计算
-    std.debug.print("\n\n", .{});
-    const latest_day_c1: f128 = latest_month * 30 - @as(f128, @floatFromInt(latest_month_int)) * 30;
-    std.debug.print("天(年)+：{d:.7}\n", .{latest_day_c1});
-
-    //const full_month: isize = @intFromFloat(latest_month * 12);
-    std.debug.print("\n\n", .{});
+// 时间测试
+fn timeCmd(arg: *uymas.cli.Arg) void {
+    const tzIndex = arg.getInt("tz") orelse 8;
+    std.debug.print("正在生成时间（UTC-{d}）\n\n", .{tzIndex});
+    while (true) {
+        std.time.sleep(std.time.ns_per_s);
+        var now = uymas.date.Date.now();
+        std.debug.print("\r👉 {s}", .{now.cnTime().timeString(std.heap.smp_allocator)});
+    }
 }

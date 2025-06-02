@@ -20,7 +20,10 @@ const time = std.time;
 
 /// 公历日期获取，获取 Unix 时间
 ///
-/// 时间分区：
+/// 时间分区：将世界分区24个时区（每隔15°划分一个），最大分别为东十二区和西十二区。
+///
+/// @todo:
+///     - 更加自定的日期生成时间戳
 pub const Date = struct {
     nano: i128 = 0,
     dayTotal: f128 = 0,
@@ -250,6 +253,7 @@ test "Date.now base test" {
     std.debug.print("\n", .{});
     std.debug.print("中国时间: {s}\n", .{now.cnTime().toString(std.heap.smp_allocator)});
     std.debug.print("UTC 时间: {s}\n", .{now.cnTime().toStringTz(std.heap.smp_allocator, 0)});
+    std.debug.print("时间: {s}\n", .{now.cnTime().timeString(std.heap.smp_allocator)});
     std.debug.print("nano: {d}\n", .{now.nano});
 
     // 指定日期计算
