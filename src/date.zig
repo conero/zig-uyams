@@ -31,7 +31,7 @@ pub const Date = struct {
     minute: usize = 0,
     second: usize = 0,
     leapType: time.epoch.YearLeapKind = time.epoch.YearLeapKind.not_leap,
-    utcTz: usize = 0, // 时间分区(time zone)
+    utcTz: isize = 0, // 时间分区(time zone)
 
     /// 获取当前时间
     pub fn now() Date {
@@ -43,13 +43,9 @@ pub const Date = struct {
         const dayTotal: f128 = @as(f128, @floatFromInt(nano)) / @as(f128, @floatFromInt(time.ns_per_day));
         const esYear = estimateYear(dayTotal);
         const leapType = if (time.epoch.isLeapYear(@as(time.epoch.Year, @intCast(esYear.year)))) time.epoch.YearLeapKind.leap else time.epoch.YearLeapKind.not_leap;
-        std.debug.print("esYear: {d:.9}\n", .{esYear.residualDay});
         const esMonth = estimateMonth(leapType, esYear.residualDay);
-        std.debug.print("esMonth: {d:.9}\n", .{esMonth.residualDay});
         const esDay = estimateDay(esMonth.residualDay);
-        std.debug.print("esDay: {d:.9}\n", .{esDay.residualDay});
         const esHour = estimateTime(esDay.residualDay);
-        std.debug.print("esHour/sec: {d:.9}\n", .{esHour.residualSec});
 
         return Date{
             .nano = nano,
@@ -62,6 +58,50 @@ pub const Date = struct {
             .second = esHour.second,
             .leapType = leapType,
         };
+    }
+
+    /// 设置日期周期
+    pub fn timeZone(self: *Date, tz: usize) *Date {
+        self.utcTz = tz;
+        return self;
+    }
+
+    /// 设置中国时区（东八区）
+    pub fn cnTime(self: *Date) *Date {
+        self.utcTz = 8;
+        return self;
+    }
+
+    /// 返回日期字符串
+    pub fn toString(self: *Date, alloc: std.mem.Allocator) []u8 {
+        return self.toStringTz(alloc, self.utcTz);
+    }
+
+    /// 返回日期字符串
+    pub fn toStringTz(self: *Date, alloc: std.mem.Allocator, tzIndex: isize) []u8 {
+        var day: usize = @intCast(self.day);
+        var hour: isize = @intCast(self.hour);
+
+        // 区间小一天
+        if (tzIndex < 0) {
+            day -= 1;
+            hour += tzIndex;
+        } else {
+            hour += tzIndex;
+            if (hour >= 24) {
+                day += 1;
+                hour -= 24;
+            }
+        }
+
+        return std.fmt.allocPrintZ(alloc, "{d}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", .{
+            self.year,
+            self.month,
+            day,
+            @as(usize, @intCast(hour)),
+            self.minute,
+            self.second,
+        }) catch unreachable;
     }
 };
 
@@ -169,7 +209,9 @@ pub fn getDaysInMonth(leap_year: time.epoch.YearLeapKind, month: usize) u5 {
 }
 
 test "Date.now base test" {
-    const now = Date.now();
-    std.debug.print("now: {d:.10}\n", .{now.dayTotal});
-    std.debug.print("month: {d}, day: {d}, hour: {d}, minute: {d}, sec: {d}\n", .{ now.month, now.day, now.hour, now.minute, now.second });
+    var now = Date.now();
+    std.debug.print("\n", .{});
+    std.debug.print("中国时间: {s}\n", .{now.cnTime().toString(std.heap.smp_allocator)});
+    std.debug.print("UTC 时间: {s}\n", .{now.cnTime().toStringTz(std.heap.smp_allocator, 0)});
+    std.debug.print("nano: {d}\n", .{now.nano});
 }
