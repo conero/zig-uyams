@@ -18,21 +18,38 @@
 const std = @import("std");
 const time = std.time;
 
-///  公历日期获取
+/// 公历日期获取，获取 Unix 时间
+///
+/// 时间分区：
 pub const Date = struct {
     nano: i128 = 0,
     dayTotal: f128 = 0,
     year: usize = 0,
     month: usize = 0,
     day: usize = 0,
+    hour: usize = 0,
+    minute: usize = 0,
+    second: usize = 0,
     leapType: time.epoch.YearLeapKind = time.epoch.YearLeapKind.not_leap,
+    utcTz: usize = 0, // 时间分区(time zone)
+
+    /// 获取当前时间
     pub fn now() Date {
-        const nano = time.nanoTimestamp();
+        return fromNano(time.nanoTimestamp());
+    }
+
+    /// 获取时间基于 Unix 的nano时间
+    pub fn fromNano(nano: i128) Date {
         const dayTotal: f128 = @as(f128, @floatFromInt(nano)) / @as(f128, @floatFromInt(time.ns_per_day));
         const esYear = estimateYear(dayTotal);
         const leapType = if (time.epoch.isLeapYear(@as(time.epoch.Year, @intCast(esYear.year)))) time.epoch.YearLeapKind.leap else time.epoch.YearLeapKind.not_leap;
+        std.debug.print("esYear: {d:.9}\n", .{esYear.residualDay});
         const esMonth = estimateMonth(leapType, esYear.residualDay);
+        std.debug.print("esMonth: {d:.9}\n", .{esMonth.residualDay});
         const esDay = estimateDay(esMonth.residualDay);
+        std.debug.print("esDay: {d:.9}\n", .{esDay.residualDay});
+        const esHour = estimateTime(esDay.residualDay);
+        std.debug.print("esHour/sec: {d:.9}\n", .{esHour.residualSec});
 
         return Date{
             .nano = nano,
@@ -40,6 +57,9 @@ pub const Date = struct {
             .year = esYear.year,
             .month = esMonth.month,
             .day = esDay.day,
+            .hour = esHour.hour,
+            .minute = esHour.minute,
+            .second = esHour.second,
             .leapType = leapType,
         };
     }
@@ -50,7 +70,11 @@ const EstimateDate = struct {
     year: usize = 0, // 计算所得年份
     month: usize = 0, // 计算所得年份
     day: usize = 0, // 计算所得年份
+    hour: usize = 0, // 计算所得小时
+    minute: usize = 0, // 计算所得分钟
+    second: usize = 0, // 计算所得秒
     residualDay: f128 = 0, // 计算年份后剩余的天数
+    residualSec: f128 = 0, // 计算年份后剩余的秒
 };
 
 /// 根据总的天数评估年份
@@ -70,7 +94,6 @@ fn estimateYear(dayTotal: f128) EstimateDate {
     const year: usize = if (dayTotalInt >= relYearDay) maxYear else maxYear - 1;
     relYearDay = if (relYearDay <= dayTotalInt) relYearDay else dayTotalInt;
     const residualDay = dayTotal - @as(f128, @floatFromInt(relYearDay));
-    std.debug.print("\nresidualDay: {d:.9}, year: {d}\n", .{ residualDay, year });
     return EstimateDate{
         .year = year,
         .residualDay = residualDay,
@@ -86,7 +109,8 @@ fn estimateMonth(leapType: time.epoch.YearLeapKind, dayTotal: f128) EstimateDate
     var relMonth: usize = 1;
     var residualDay: f128 = 0;
     // 月份遍历
-    for (1..13) |mth| {
+    var mth: usize = 12;
+    while (mth > 0) : (mth -= 1) {
         const vDay = getDaysInMonth(leapType, mth);
         dayCount -= @intCast(vDay);
         if (dayInt >= dayCount) {
@@ -104,8 +128,29 @@ fn estimateDay(dayTotal: f128) EstimateDate {
     const dayInt = @as(usize, @intFromFloat(dayTotal));
     const residualDay = dayTotal - @as(f128, @floatFromInt(dayInt));
     return EstimateDate{
-        .day = if (dayInt > 0) dayInt else 1,
+        .day = if (dayInt > 0) dayInt + 1 else 1,
         .residualDay = residualDay,
+    };
+}
+
+/// 根据总的天数评估时分秒
+fn estimateTime(dayTotal: f128) EstimateDate {
+    // 小时
+    const hourTotal: f128 = dayTotal * 24;
+    const hour = @as(usize, @intFromFloat(hourTotal));
+    // 分钟
+    const minuteTotal: f128 = (hourTotal - @as(f128, @floatFromInt(hour))) * 60;
+    const minute = @as(usize, @intFromFloat(minuteTotal));
+    // 秒
+    const secondTotal: f128 = (minuteTotal - @as(f128, @floatFromInt(minute))) * 60;
+    const second = @as(usize, @intFromFloat(secondTotal));
+    // 秒
+    const residualSec = secondTotal - @as(f128, @floatFromInt(second));
+    return EstimateDate{
+        .hour = hour,
+        .minute = minute,
+        .second = second,
+        .residualSec = residualSec,
     };
 }
 
@@ -126,4 +171,5 @@ pub fn getDaysInMonth(leap_year: time.epoch.YearLeapKind, month: usize) u5 {
 test "Date.now base test" {
     const now = Date.now();
     std.debug.print("now: {d:.10}\n", .{now.dayTotal});
+    std.debug.print("month: {d}, day: {d}, hour: {d}, minute: {d}, sec: {d}\n", .{ now.month, now.day, now.hour, now.minute, now.second });
 }
