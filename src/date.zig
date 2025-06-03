@@ -35,6 +35,7 @@ pub const Date = struct {
     second: usize = 0,
     leapType: time.epoch.YearLeapKind = time.epoch.YearLeapKind.not_leap,
     utcTz: isize = 0, // 时间分区(time zone)
+    residualSec: f128 = 0, // 计算日期后剩余的秒数（用于获取精确的时间戳）
 
     /// 获取当前时间
     pub fn now() Date {
@@ -71,6 +72,60 @@ pub const Date = struct {
     /// 获取时间基于 Unix 的微秒时间
     pub fn fromMicro(stamp: i128) Date {
         return Date.fromNano(stamp * 1000_000);
+    }
+
+    /// 提供年月日构造一个日期
+    pub fn init(year: usize, month: usize, day: usize, hour: usize, minute: usize, second: f32) Date {
+        const secondInt = @as(usize, @intFromFloat(second));
+        const residualSec = second - @as(f32, @floatCast(secondInt));
+        return Date{
+            .year = year,
+            .month = month,
+            .day = day,
+            .hour = hour,
+            .minute = minute,
+            .second = secondInt,
+            .residualSec = @floatCast(residualSec),
+        };
+    }
+
+    /// 根据当前的日期计算时间戳
+    pub fn nanoStamp(self: *Date) i128 {
+        var nano: i128 = 0;
+        // 年份值计算
+        for (time.epoch.epoch_year + 1..self.year) |year| {
+            const day = time.epoch.getDaysInYear(year);
+            nano += day * time.ns_per_day;
+        }
+
+        //  月份值计算
+        for (1..self.month) |mth| {
+            const mthDay = getDaysInMonth(self.year, mth);
+            nano += mthDay * time.ns_per_day;
+        }
+
+        // 天
+        nano += self.day * time.ns_per_day;
+        nano += self.hour * time.ns_per_hour;
+        nano += self.minute * time.ns_per_minute;
+        nano += self.second * time.ns_per_second;
+        nano += @as(i128, @intFromFloat(self.residualSec)) * 1000_000;
+        return nano;
+    }
+
+    /// 获取时间戳（微秒）
+    pub fn microStamp(self: *Date) i64 {
+        return @as(i64, @intCast(@divFloor(self.nanoStamp(), time.ns_per_us)));
+    }
+
+    /// 获取时间戳（微秒）
+    pub fn milliStamp(self: *Date) i64 {
+        return @as(i64, @intCast(@divFloor(self.nanoTimestamp(), time.ns_per_ms)));
+    }
+
+    /// 获取时间戳（秒）
+    pub fn timestamp(self: *Date) i64 {
+        return @divFloor(self.milliTimestamp(), time.ms_per_s);
     }
 
     /// 设置日期周期

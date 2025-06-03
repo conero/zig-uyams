@@ -125,6 +125,6 @@ fn timeCmd(arg: *uymas.cli.Arg) void {
     while (true) {
         std.time.sleep(std.time.ns_per_s);
         var now = uymas.date.Date.now();
-        std.debug.print("\r👉 {s}", .{now.cnTime().timeString(std.heap.smp_allocator)});
+        std.debug.print("\r👉 {s}", .{now.cnTime().timeStringTz(std.heap.smp_allocator, tzIndex)});
     }
 }
