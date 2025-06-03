@@ -16,6 +16,7 @@ pub fn main() !void {
     // test
     _ = app.command("test", testCmd);
     _ = app.command("time", timeCmd);
+    _ = app.command("version", versionCmd);
     // 命令注册
     // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
     const vDemoCmd = [_][]const u8{ "demo", "dm" };
@@ -30,6 +31,10 @@ pub fn main() !void {
 fn indexCmd(arg: *uymas.cli.Arg) void {
     if (arg.checkOpt("test")) {
         testCmd(arg);
+        return;
+    }
+    if (arg.checkOpt("version")) {
+        versionCmd(arg);
         return;
     }
     std.debug.print("这是 zig uymas 命令行基础程序\n\n", .{});
@@ -47,6 +52,9 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
+    std.debug.print("  version         版本信息输出\n", .{});
+    std.debug.print("\n  默认选择        \n", .{});
+    std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("\n", .{});
 }
 
@@ -127,4 +135,9 @@ fn timeCmd(arg: *uymas.cli.Arg) void {
         var now = uymas.date.Date.now();
         std.debug.print("\r👉 {s}", .{now.cnTime().timeStringTz(std.heap.smp_allocator, tzIndex)});
     }
+}
+
+// 版本信息
+fn versionCmd(_: *uymas.cli.Arg) void {
+    std.debug.print("v{s}/{s}", .{ uymas.Version, uymas.Release });
 }
