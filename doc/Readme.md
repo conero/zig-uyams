@@ -36,6 +36,10 @@ zig build run
 
 # 跨环境编译
 zig build -Doptimize=ReleaseSmall -Dtarget=x86_64-linux-gnu
+
+# 文档生成
+cd gendoc
+zig build-lib -femit-docs=uymasdocs ../src/lib.zig
 ```
 
 
