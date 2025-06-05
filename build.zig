@@ -23,8 +23,8 @@ pub fn build(b: *std.Build) void {
 
     // 编译用例-demo
     const example_demo = b.addExecutable(.{
-        .name = "demo",
-        .root_source_file = b.path("example/demo/main.zig"),
+        .name = "zuymas",
+        .root_source_file = b.path("example/zuymas/main.zig"),
         .optimize = optimize,
         .target = target,
     });
