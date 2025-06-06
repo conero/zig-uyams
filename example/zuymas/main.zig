@@ -2,6 +2,7 @@
 // 新增用例
 const uymas = @import("uymas");
 const std = @import("std");
+const builtin = @import("builtin");
 
 // 内容示例
 pub fn main() !void {
@@ -117,6 +118,8 @@ fn testCmd(arg: *uymas.cli.Arg) void {
         std.debug.print("CWD 获取错误，{?}", .{err});
     }
 
+    // 系统参数
+    std.debug.print("操作系统：{any}, 架构： {any}\n", .{ builtin.os.tag, builtin.cpu.arch });
     std.debug.print("\n", .{});
 }
 
