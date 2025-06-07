@@ -23,6 +23,10 @@
 
 - **example/zuymas**
   - break: 将 `example/demo` 重命名为 zuymas
+- **date**
+  - feat: 新增方法`timeToDay`/`dayToTime` 用于做日期与时间的转换
+  - feat: 新增 `Date.incDay` 用于做日期运行，天数加减
+
 
 
 

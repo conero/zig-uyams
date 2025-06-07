@@ -197,6 +197,113 @@ pub const Date = struct {
     pub fn timeString(self: *Date, alloc: std.mem.Allocator) []u8 {
         return self.timeStringTz(alloc, self.utcTz);
     }
+
+    // 日期+
+    fn incDayAdd(self: *Date, inc: f32) Date {
+        var date = self.*;
+        const dayInt: usize = @intFromFloat(inc);
+        const dayLest = (inc - @as(f32, @floatFromInt(dayInt))) * 24 * 60 * 60;
+        const residualSecBig = dayLest + date.residualSec;
+        const residualSecInt: i64 = @intFromFloat(residualSecBig);
+        date.residualSec = residualSecBig - @as(f128, @floatFromInt(residualSecInt));
+
+        // 秒
+        const mintueFloat = @as(f64, @floatFromInt(@as(i64, @intCast(date.second)) + residualSecInt)) / 60;
+        const mintueInt: usize = @intFromFloat(mintueFloat);
+        date.second = @intFromFloat((mintueFloat - @as(f64, @floatFromInt(mintueInt))) * 60);
+
+        // 分
+        const hourFloat = @as(f64, @floatFromInt(@as(i64, @intCast(date.mintue)) + mintueInt)) / 60;
+        const houtInt: usize = @intFromFloat(hourFloat);
+        date.minute = @intFromFloat((hourFloat - @as(f64, @floatFromInt(houtInt))) * 60);
+
+        // 时
+        const dateFloat = @as(f64, @floatFromInt(@as(i64, @intCast(date.hour)) + houtInt)) / 24;
+        const dateInt: usize = @intFromFloat(dateFloat);
+        date.hour = @intFromFloat((dateFloat - @as(f64, @floatFromInt(dateInt))) * 24);
+
+        // 天
+        var dayCtt = self.day + dateInt;
+        var month = self.month;
+        var year = self.year;
+
+        // 遍历处理
+        while (true) {
+            const leapKind = time.epoch.getLeapYearKind(year);
+            const curMonthAll = getDaysInMonth(leapKind, self.month);
+            if (curMonthAll < dayCtt) {
+                month += 1;
+                dayCtt = dayCtt - curMonthAll;
+
+                // 翻滚到下一年
+                if (month > 12) {
+                    month = 1;
+                    year += 1;
+                }
+            } else {
+                break;
+            }
+        }
+        date.day = dayCtt;
+        date.month = month;
+        date.year = year;
+
+        return date;
+    }
+
+    // 日期-
+    fn incDaySub(self: *Date, inc: f32) Date {
+        var date = self.*;
+        const second: f32 = @as(f32, @floatFromInt(date.second)) + date.residualSec;
+        var curDay = timeToDay(usize, date.hour, date.minute, second);
+        curDay += date.day;
+        curDay -= @as(f32, @abs(inc));
+
+        var month = date.month;
+        var year = date.year;
+        var realDay: f32 = @floatFromInt(date.day);
+        while (true) {
+            if (curDay > 0) {
+                break;
+            }
+
+            if (realDay > curDay) {
+                realDay += curDay;
+                break;
+            }
+            month -= 1;
+            if (month < 1) {
+                month = 12;
+                year -= 1;
+            }
+            const leapKind = time.epoch.getLeapYearKind(year);
+            const lastMonthDay = getDaysInMonth(leapKind, month);
+            realDay += @as(f32, @floatFromInt(lastMonthDay));
+        }
+
+        date.year = year;
+        date.month = month;
+
+        const curTime = dayToTime(f32, realDay);
+
+        date.day = curTime.day;
+        date.hour = curTime.hour;
+        date.minute = curTime.minute;
+        date.second = curTime.second;
+        date.residualSec = curTime.residualSec;
+        return date;
+    }
+
+    /// 当前的日期加/减天数
+    pub fn incDay(self: *Date, inc: f32) Date {
+        if (inc == 0) {
+            return self.*;
+        }
+        if (inc < 0) {
+            return self.incDaySub(inc);
+        }
+        return self.incDayAdd(inc);
+    }
 };
 
 /// 根据总天数评估年份
@@ -299,6 +406,33 @@ pub fn getDaysInMonth(leap_year: time.epoch.YearLeapKind, month: usize) u5 {
         }),
         4, 6, 9, 11 => 30,
         else => 0,
+    };
+}
+
+/// 指定时分秒转为日期 `1233:222:3333.33` 等装为日期格式
+pub fn timeToDay(comptime T: type, hour: T, mintue: T, second: f32) f32 {
+    const hourF32 = @as(f32, @floatFromInt(hour)) + @as(f32, @floatFromInt(mintue)) / 60 + second / 3600;
+    return hourF32 / 24;
+}
+
+/// 日期转时分秒，日期为数值类型
+pub fn dayToTime(comptime T: type, day: T) struct { day: usize, hour: usize, minute: usize, second: usize, residualSec: f128 } {
+    const dayInt: usize = @intFromFloat(day);
+    var hour: f128 = @floatCast(day - @as(T, @floatFromInt(dayInt)));
+    hour *= 24;
+    const hourInt: usize = @intFromFloat(hour);
+    const minute: f128 = (hour - @as(f128, @floatFromInt(hourInt))) * 60;
+    const minuteInt: usize = @intFromFloat(minute);
+    const second = (minute - @as(f128, @floatFromInt(minuteInt))) * 60;
+    const secondInt: usize = @intFromFloat(second);
+    const residualSec = second - @as(f128, @floatFromInt(secondInt));
+
+    return .{
+        .day = dayInt,
+        .hour = hourInt,
+        .minute = minuteInt,
+        .second = secondInt,
+        .residualSec = residualSec,
     };
 }
 
