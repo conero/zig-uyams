@@ -77,7 +77,7 @@ pub const Date = struct {
     /// 提供年月日构造一个日期
     pub fn init(year: usize, month: usize, day: usize, hour: usize, minute: usize, second: f32) Date {
         const secondInt = @as(usize, @intFromFloat(second));
-        const residualSec = second - @as(f32, @floatCast(secondInt));
+        const residualSec = second - @as(f32, @floatFromInt(secondInt));
         return Date{
             .year = year,
             .month = month,
@@ -94,21 +94,22 @@ pub const Date = struct {
         var nano: i128 = 0;
         // 年份值计算
         for (time.epoch.epoch_year + 1..self.year) |year| {
-            const day = time.epoch.getDaysInYear(year);
-            nano += day * time.ns_per_day;
+            const day = time.epoch.getDaysInYear(@intCast(year));
+            nano += @as(i128, @intCast(day)) * time.ns_per_day;
         }
 
         //  月份值计算
+        const yearLearKindKind = yearLearKind(usize, self.year);
         for (1..self.month) |mth| {
-            const mthDay = getDaysInMonth(self.year, mth);
-            nano += mthDay * time.ns_per_day;
+            const mthDay = getDaysInMonth(yearLearKindKind, mth);
+            nano += @as(i128, @intCast(mthDay)) * time.ns_per_day;
         }
 
         // 天
         nano += self.day * time.ns_per_day;
         nano += self.hour * time.ns_per_hour;
-        nano += self.minute * time.ns_per_minute;
-        nano += self.second * time.ns_per_second;
+        nano += self.minute * time.ns_per_min;
+        nano += self.second * time.ns_per_s;
         nano += @as(i128, @intFromFloat(self.residualSec)) * 1000_000;
         return nano;
     }
@@ -304,6 +305,13 @@ pub const Date = struct {
         }
         return self.incDayAdd(inc);
     }
+
+    /// 当前的日期加/减天数
+    pub fn subDate(self: *Date, sub: Date) f64 {
+        var vSub = sub;
+        const subDiff = self.nanoStamp() - vSub.nanoStamp();
+        return @floatFromInt(subDiff);
+    }
 };
 
 /// 根据总天数评估年份
@@ -436,6 +444,10 @@ pub fn dayToTime(comptime T: type, day: T) struct { day: usize, hour: usize, min
     };
 }
 
+pub fn yearLearKind(comptime T: type, year: T) time.epoch.YearLeapKind {
+    return if (time.epoch.isLeapYear(@as(time.epoch.Year, @intCast(year)))) .leap else .not_leap;
+}
+
 test "Date.now base test" {
     var now = Date.now();
     const testing = std.testing;
@@ -449,4 +461,11 @@ test "Date.now base test" {
     var date = Date.fromNano(867768559000_000_000);
     std.debug.print("unix 时间戳中国时间: {s}\n", .{date.cnTime().toString(std.heap.smp_allocator)});
     try testing.expect(date.year == 1997);
+}
+
+test "Date.subDate case" {
+    var date = Date.init(2025, 6, 8, 21, 48, 23.093934);
+    const subDate = Date.init(2025, 3, 30, 14, 20, 3.893899093);
+    const diff = date.subDate(subDate);
+    std.debug.print("\n时间差: {d:.4}\n", .{diff});
 }
