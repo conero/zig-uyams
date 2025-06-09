@@ -28,6 +28,11 @@
   - feat: 新增 `Date.incDay` 用于做日期运行，天数加减
   - feat: 新增方法 `Date.subDate` 用于实现连个日期相加
   - feat: 新增方法 `yearLearKind` 用于获取闰年类型
+- **cli**
+  - break: `App.registersMap` 由单函数调整为struct 扩展操作
+
+
+
 
 
 

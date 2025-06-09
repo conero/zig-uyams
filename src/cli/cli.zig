@@ -12,6 +12,11 @@ fn defaultIndexFn(_: *Arg) void {
     std.debug.print("zig-uymas  v{s}/{s}\n", .{ variable.Version, variable.Release });
 }
 
+// 注册缓存项
+const RegisterItem = struct {
+    execFn: *const fn (*Arg) void, // 执行方法
+};
+
 /// cli 应用处理器
 pub const App = struct {
     // 内存分配其
@@ -22,7 +27,7 @@ pub const App = struct {
     args: ?*Arg = null,
 
     // 注册字典
-    registersMap: std.StringHashMap(*const fn (*Arg) void),
+    registersMap: std.StringHashMap(RegisterItem),
 
     /// 初始化应用
     pub fn new(allocator: std.mem.Allocator) App {
@@ -32,13 +37,16 @@ pub const App = struct {
         return App{
             .allocator = allocator,
             //.args = null,
-            .registersMap = std.StringHashMap(*const fn (*Arg) void).init(allocator),
+            .registersMap = std.StringHashMap(RegisterItem).init(allocator),
         };
     }
 
     /// 命令注册
     pub fn command(self: *App, name: []const u8, runFn: fn (*Arg) void) *App {
-        self.registersMap.put(name, runFn) catch |err| {
+        const item = RegisterItem{
+            .execFn = runFn,
+        };
+        self.registersMap.put(name, item) catch |err| {
             std.debug.print("registersMap 注册异常，{?}\n", .{err});
         };
         return self;
@@ -86,8 +94,8 @@ pub const App = struct {
         }
 
         // 注册命令
-        if (self.registersMap.get(vCommand)) |callFn| {
-            callFn(self.args.?);
+        if (self.registersMap.get(vCommand)) |rItem| {
+            rItem.execFn(self.args.?);
             return;
         }
 
