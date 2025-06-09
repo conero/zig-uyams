@@ -12,9 +12,56 @@ fn defaultIndexFn(_: *Arg) void {
     std.debug.print("zig-uymas  v{s}/{s}\n", .{ variable.Version, variable.Release });
 }
 
-// 注册缓存项
+// 命令行选项
+const Option = struct {
+    name: []const u8, // 选项名称
+    alias: ?[]const []const u8 = null, // 选项别名
+    help: ?[]const u8 = null, // 项目信息
+};
+
+// 命令注册字典项
 const RegisterItem = struct {
     execFn: *const fn (*Arg) void, // 执行方法
+    validateAble: bool = true, // 是否进行选项验证
+    options: ?std.ArrayList(Option) = null,
+
+    //  选项验证
+    pub fn validate(self: *const RegisterItem, args: *Arg, alloc: ?std.mem.Allocator) bool {
+        if (!self.validateAble) {
+            return true;
+        }
+
+        // 将设置信息装载到map中，用于存在判别
+        const allocator = alloc orelse std.heap.c_allocator;
+
+        // 内存处理
+        var checkMap = std.StringHashMap(bool).init(allocator);
+        // if (alloc == null) {
+        //     defer allocator.free(checkMap);
+        // }
+        if (self.options) |allowOptList| {
+            for (allowOptList.items) |option| {
+                checkMap.put(option.name, true) catch |err| {
+                    std.debug.print("checkMap 注册异常，{?}\n", .{err});
+                };
+                if (option.alias) |alias| {
+                    for (alias) |a| {
+                        checkMap.put(a, true) catch |err| {
+                            std.debug.print("checkMap 注册异常，{?}\n", .{err});
+                        };
+                    }
+                }
+            }
+        }
+        // 验证选项
+        for (args.getOptList()) |option| {
+            if (!checkMap.contains(option)) {
+                std.debug.print("{s}: 选项不支持，请查看文帮助后重试\n", .{option});
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 /// cli 应用处理器
@@ -60,6 +107,13 @@ pub const App = struct {
         return self;
     }
 
+    /// 命令注册名单属性参数
+    pub fn commandWith(self: *App, name: []const u8, item: RegisterItem) void {
+        self.registersMap.put(name, item) catch |err| {
+            std.debug.print("registersMap 注册异常，{?}\n", .{err});
+        };
+    }
+
     /// 定义入口函数
     pub fn index(self: *App, runFn: fn (*Arg) void) void {
         self.indexFn = runFn;
@@ -95,6 +149,9 @@ pub const App = struct {
 
         // 注册命令
         if (self.registersMap.get(vCommand)) |rItem| {
+            if (!rItem.validate(self.args.?, self.allocator)) {
+                return;
+            }
             rItem.execFn(self.args.?);
             return;
         }
