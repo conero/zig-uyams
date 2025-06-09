@@ -16,7 +16,14 @@ pub fn main() !void {
 
     // test
     _ = app.command("test", testCmd);
-    _ = app.command("time", timeCmd);
+
+    // 命令注册
+    var timeOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
+    try timeOptionList.append(uymas.cli.Option{ .name = "tz" });
+    app.commandWith("time", uymas.cli.RegisterItem{
+        .execFn = timeCmd,
+        .options = timeOptionList,
+    });
     _ = app.command("version", versionCmd);
     // 命令注册
     // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);

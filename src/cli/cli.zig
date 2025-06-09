@@ -13,14 +13,14 @@ fn defaultIndexFn(_: *Arg) void {
 }
 
 // 命令行选项
-const Option = struct {
+pub const Option = struct {
     name: []const u8, // 选项名称
     alias: ?[]const []const u8 = null, // 选项别名
     help: ?[]const u8 = null, // 项目信息
 };
 
 // 命令注册字典项
-const RegisterItem = struct {
+pub const RegisterItem = struct {
     execFn: *const fn (*Arg) void, // 执行方法
     validateAble: bool = true, // 是否进行选项验证
     options: ?std.ArrayList(Option) = null,
