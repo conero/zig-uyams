@@ -56,7 +56,7 @@ pub const RegisterItem = struct {
         // 验证选项
         for (args.getOptList()) |option| {
             if (!checkMap.contains(option)) {
-                std.debug.print("{s}: 选项不支持，请查看文帮助后重试\n", .{option});
+                std.debug.print("{s}: 选项不支持，请查看帮助后重试\n", .{option});
                 return false;
             }
         }
@@ -112,6 +112,13 @@ pub const App = struct {
         self.registersMap.put(name, item) catch |err| {
             std.debug.print("registersMap 注册异常，{?}\n", .{err});
         };
+    }
+
+    /// 命令列表注册名单属性参数
+    pub fn commandListWith(self: *App, nameList: []const []const u8, item: RegisterItem) void {
+        for (nameList) |name| {
+            _ = self.commandWith(name, item);
+        }
     }
 
     /// 定义入口函数
