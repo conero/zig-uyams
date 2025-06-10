@@ -17,6 +17,32 @@ pub const Option = struct {
     name: []const u8, // 选项名称
     alias: ?[]const []const u8 = null, // 选项别名
     help: ?[]const u8 = null, // 项目信息
+    required: bool = false, // 是否必须
+    rule: ?[]const u8 = null, // 验证规则，支持如："must,email,number,switch" 等。 @todo 待实现
+    default: ?[]const u8 = null, // 默认值，
+    isdata: bool = false, // 是否数据项（输入子命令）
+    group: ?[]const u8 = null, // 后期用作分组文档生成
+
+    // 获取选项值
+    pub fn getValue(self: *const Option, args: *Arg) []const u8 {
+        var value_option = args.get(self.name);
+        if (value_option) |value| {
+            return value;
+        }
+
+        // 获取别名
+        if (self.alias) |alias| {
+            for (alias) |aliasKey| {
+                value_option = args.get(aliasKey);
+                if (value_option) |value| {
+                    return value;
+                }
+            }
+        }
+
+        // 获取默认值
+        return self.default orelse "";
+    }
 };
 
 // 命令注册字典项
@@ -154,7 +180,7 @@ pub const App = struct {
             return;
         }
 
-        // 注册命令
+        // 执行注册的命令
         if (self.registersMap.get(vCommand)) |rItem| {
             if (!rItem.validate(self.args.?, self.allocator)) {
                 return;
