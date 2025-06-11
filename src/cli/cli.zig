@@ -82,7 +82,7 @@ pub const RegisterItem = struct {
         // 验证选项
         for (args.getOptList()) |option| {
             if (!checkMap.contains(option)) {
-                std.debug.print("{s}: 选项不支持，请查看帮助后重试\n", .{option});
+                std.debug.print("{s}: 选项不支持，请查看帮助命令/选项\n", .{option});
                 return false;
             }
         }

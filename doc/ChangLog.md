@@ -30,7 +30,8 @@
   - feat: 新增方法 `yearLearKind` 用于获取闰年类型
 - **cli**
   - feat: `App` 初步实现不存在的选项值校验
-  - feat: `App` 新增方法 `commandWith` 和 `commandListWith` 用于直接item注册
+  - feat: `App` 新增方法 `commandWith` 和 `commandListWith` 用于直接item注册、
+  - feat: `App` 新增方法 `getSubCommond` 获取子命令
   - feat: `Option` 新增方法`getValue`用于获取选项的值
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 

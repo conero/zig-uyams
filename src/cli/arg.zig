@@ -5,6 +5,8 @@ const number = @import("../number.zig");
 pub const Arg = struct {
     /// 命令
     command: []const u8 = "",
+    /// 子命令
+    subCommand: []const u8 = "",
     /// 操作系统命令列表
     osArgsList: ?[][:0]u8 = null,
     /// 选项列表
@@ -26,6 +28,7 @@ pub const Arg = struct {
     /// 指定参数列表来解析命令行
     pub fn args(argsList: [][:0]u8, allocator: std.mem.Allocator) Arg {
         var command: []u8 = "";
+        var subCommand: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
         var optionKvEntry = std.StringHashMap([][]const u8).init(allocator);
         var lastOpt: []u8 = ""; // 最终的选项
@@ -72,6 +75,9 @@ pub const Arg = struct {
                 //std.debug.print("arg: {s}\n", .{arg});
                 command = arg;
                 continue;
+            } else if (index == 1 and command.len > 0) {
+                subCommand = arg;
+                continue;
             }
 
             // 选项值记录
@@ -108,6 +114,7 @@ pub const Arg = struct {
         // 此语句与前面一样
         return Arg{
             .command = command,
+            .subCommand = subCommand,
             .allocator = allocator,
             .optionList = optionList,
             .optionKvEntry = optionKvEntry,
@@ -117,6 +124,11 @@ pub const Arg = struct {
     /// 获取命令
     pub fn getCommand(self: *const Arg) []const u8 {
         return self.command;
+    }
+
+    /// 获取子命令
+    pub fn getSubCommand(self: *const Arg) []const u8 {
+        return self.subCommand;
     }
 
     /// 获取选项列表
