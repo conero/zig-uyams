@@ -33,6 +33,7 @@
   - feat: `App` 新增方法 `commandWith` 和 `commandListWith` 用于直接item注册、
   - feat: `App` 新增方法 `getSubCommond` 获取子命令
   - feat: `Option` 新增方法`getValue`用于获取选项的值
+  - feat: `Option` 新增方法`exist/validate`用于判断选项是否设置及数据验证支持
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 
 

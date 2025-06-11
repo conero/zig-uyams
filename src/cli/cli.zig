@@ -43,6 +43,44 @@ pub const Option = struct {
         // 获取默认值
         return self.default orelse "";
     }
+
+    /// 选项是否设置
+    pub fn exist(self: *const Option, args: *Arg) bool {
+        if (args.checkOpt(self.name)) {
+            return true;
+        }
+
+        // 别名
+        if (self.alias) |alias| {
+            for (alias) |aliasKey| {
+                if (args.checkOpt(aliasKey)) {
+                    return true;
+                }
+            }
+        }
+
+        // 默认值
+        if (self.default) |default| {
+            //std.mem.lowerString(u8, default);//
+            //return std.mem.eql(u8, std.mem.lowerString(u8, default), "true"); // 字符串转小写实现
+            return std.mem.eql(u8, default, "true");
+        }
+
+        return false;
+    }
+
+    /// 是否通过验证
+    pub fn validate(self: *const Option, args: *Arg) bool {
+        const value = self.getValue(args);
+        if (self.required and value.len == 0 and !self.exist(args)) {
+            std.debug.print("{s}: 必填项，请输入\n", .{self.name});
+            return false;
+        }
+
+        // @todo 待实现更多类型
+
+        return true;
+    }
 };
 
 // 命令注册字典项
