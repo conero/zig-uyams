@@ -14,6 +14,7 @@
 - [x] `#250603`  demo 包重命名为 `zuymas /zumas`之类的
 - [ ] `#250603`  windows 尝试没人修改当前命令行对话中的字符集，使其输出不乱码
 - [x] `#250606`  cli 新增选项识别，不支持的选项进行验证提示
+- [ ] `#250612` 根据注册的 option 值生成帮助文档
 
 
 
@@ -34,6 +35,7 @@
   - feat: `App` 新增方法 `getSubCommond` 获取子命令
   - feat: `Option` 新增方法`getValue`用于获取选项的值
   - feat: `Option` 新增方法`exist/validate`用于判断选项是否设置及数据验证支持
+  - feat: `Arg` 新方法 `cmdNext` 用于从重连续命令中获取下一个命令
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 - **其他**
   - pref: 删除 zig init 初始化创建的模板函数

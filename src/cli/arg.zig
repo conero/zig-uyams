@@ -7,6 +7,8 @@ pub const Arg = struct {
     command: []const u8 = "",
     /// 子命令
     subCommand: []const u8 = "",
+    /// 连续子命令列表（开头命令不含子命令）
+    contCmdList: std.ArrayList([]const u8),
     /// 操作系统命令列表
     osArgsList: ?[][:0]u8 = null,
     /// 选项列表
@@ -30,6 +32,7 @@ pub const Arg = struct {
         var command: []u8 = "";
         var subCommand: []u8 = "";
         var optionList = std.ArrayList([]const u8).init(allocator);
+        var contCmdList = std.ArrayList([]const u8).init(allocator);
         var optionKvEntry = std.StringHashMap([][]const u8).init(allocator);
         var lastOpt: []u8 = ""; // 最终的选项
         for (argsList, 0..) |arg, index| {
@@ -70,6 +73,12 @@ pub const Arg = struct {
                 lastOpt = rawOptName;
                 continue;
             }
+            // 还没选项时的非输入参数
+            if (optionList.items.len == 0) {
+                contCmdList.append(arg) catch |err| {
+                    std.debug.print("contCmdList 值写追加错误，更新，{?}\n", .{err});
+                };
+            }
             // 认定第一个参数为命令行
             if (command.len == 0 and index == 0) {
                 //std.debug.print("arg: {s}\n", .{arg});
@@ -106,6 +115,7 @@ pub const Arg = struct {
                 .allocator = allocator,
                 .optionList = optionList,
                 .optionKvEntry = optionKvEntry,
+                .contCmdList = contCmdList,
             };
         } else |err| {
             std.debug.print("command 值处理异常，{?}\n", .{err});
@@ -118,6 +128,7 @@ pub const Arg = struct {
             .allocator = allocator,
             .optionList = optionList,
             .optionKvEntry = optionKvEntry,
+            .contCmdList = contCmdList,
         };
     }
 
@@ -205,6 +216,27 @@ pub const Arg = struct {
                 std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
                 return null;
             };
+        }
+        return null;
+    }
+
+    /// 获取命令行列表
+    pub fn cmdNext(self: *Arg, markKey: ?[]const u8) ?[]u8 {
+        if (markKey) |mark| {
+            var index: i8 = -1;
+            const cmdLen = self.contCmdList.items.len;
+            for (self.contCmdList.items, 0) |cmd, orderIdx| {
+                if (std.mem.eql(u8, cmd, mark)) {
+                    index = orderIdx + 1;
+                    if (index < cmdLen) {
+                        return self.contCmdList.items[index];
+                    }
+                }
+            }
+            return null;
+        }
+        if (self.contCmdList.items.len > 0) {
+            return self.contCmdList.items[0];
         }
         return null;
     }
