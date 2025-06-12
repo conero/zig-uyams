@@ -25,6 +25,14 @@ pub const Option = struct {
 
     // 获取选项值
     pub fn getValue(self: *const Option, args: *Arg) []const u8 {
+        // 为数据值时，将子命令返回给命令行
+        if (self.isdata) {
+            const subCommnd = args.getSubCommand();
+            if (subCommnd.len > 0) {
+                return subCommnd;
+            }
+        }
+
         var value_option = args.get(self.name);
         if (value_option) |value| {
             return value;
@@ -115,12 +123,17 @@ pub const RegisterItem = struct {
                         };
                     }
                 }
+
+                // 选项验证是否通过
+                if (!option.validate(args)) {
+                    return false;
+                }
             }
         }
-        // 验证选项
+        // 验证选项「是否支持」
         for (args.getOptList()) |option| {
             if (!checkMap.contains(option)) {
-                std.debug.print("{s}: 选项不支持，请查看帮助命令/选项\n", .{option});
+                std.debug.print("{s}: 选项不支持，请查看帮助命令/选项\n\n", .{option});
                 return false;
             }
         }
