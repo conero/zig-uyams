@@ -146,7 +146,13 @@ pub const RegisterItem = struct {
 
     /// 根据配置生帮助文档
     pub fn genHelp(self: *const RegisterItem) void {
-        var helpMsg = "";
+        var helpMsg = self.commandName;
+        if (self.help) |help| {
+            helpMsg += "       " + help;
+        } else {
+            helpMsg += "       示例命令，可在注册中定义";
+        }
+
         // 获取帮助信息
         if (self.options) |allowOptList| {
             for (allowOptList.items) |option| {

@@ -40,6 +40,7 @@
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 - **string**（新增）
   - feat: 实现方法 `mutable/mutableAlloc` 用于字面字符串转变量
+  - feat: 新增 `format` 用于无异常格式化内容
 
 - **其他**
   - pref: 删除 zig init 初始化创建的模板函数

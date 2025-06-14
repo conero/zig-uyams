@@ -11,3 +11,8 @@ pub fn mutable(s: []const u8) []u8 {
 pub fn mutableAlloc(alloc: std.mem.Allocator, s: []const u8) []u8 {
     return std.fmt.allocPrintZ(alloc, "{s}", .{s}) catch unreachable;
 }
+
+/// 格式化字符串
+pub fn format(alloc: std.mem.Allocator, vFmt: []const u8, args: anytype) []u8 {
+    return std.fmt.allocPrintZ(alloc, vFmt, args) catch unreachable;
+}
