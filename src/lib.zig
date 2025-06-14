@@ -17,3 +17,5 @@ pub const util = @import("util.zig");
 pub const number = @import("number.zig");
 /// 日期处理库
 pub const date = @import("date.zig");
+/// 字符串处理库
+pub const string = @import("string.zig");

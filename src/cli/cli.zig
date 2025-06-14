@@ -2,6 +2,7 @@
 const arg = @import("arg.zig");
 const std = @import("std");
 const variable = @import("../variable.zig");
+const string = @import("../string.zig");
 
 /// 命令行处理；
 pub const Arg = arg.Arg;
@@ -96,6 +97,9 @@ pub const RegisterItem = struct {
     execFn: *const fn (*Arg) void, // 执行方法
     validateAble: bool = true, // 是否进行选项验证
     options: ?std.ArrayList(Option) = null,
+    commandName: []u8 = "", // 命令行名称
+    commandAlias: ?[]const []const u8 = null, // 选项别名
+    help: ?[]const u8 = null, // 命令行帮助信息
 
     //  选项验证
     pub fn validate(self: *const RegisterItem, args: *Arg, alloc: ?std.mem.Allocator) bool {
@@ -139,6 +143,28 @@ pub const RegisterItem = struct {
         }
         return true;
     }
+
+    /// 根据配置生帮助文档
+    pub fn genHelp(self: *const RegisterItem) void {
+        var helpMsg = "";
+        // 获取帮助信息
+        if (self.options) |allowOptList| {
+            for (allowOptList.items) |option| {
+                const help = option.help orelse "这是选项";
+                var alias = "";
+                if (option.alias and option.alias.len > 0) {
+                    alias = std.mem.join(std.heap.smp_allocator, "-", option.alias);
+                }
+                helpMsg += "-" + option.name + "   " + help + alias + "\n";
+            }
+        }
+
+        if (helpMsg.len == 0) {
+            return;
+        }
+
+        std.debug.print("{s}\n", .{helpMsg});
+    }
 };
 
 /// cli 应用处理器
@@ -169,6 +195,7 @@ pub const App = struct {
     pub fn command(self: *App, name: []const u8, runFn: fn (*Arg) void) *App {
         const item = RegisterItem{
             .execFn = runFn,
+            .commandName = string.mutableAlloc(self.allocator, name),
         };
         self.registersMap.put(name, item) catch |err| {
             std.debug.print("registersMap 注册异常，{?}\n", .{err});
@@ -186,13 +213,26 @@ pub const App = struct {
 
     /// 命令注册名单属性参数
     pub fn commandWith(self: *App, name: []const u8, item: RegisterItem) void {
-        self.registersMap.put(name, item) catch |err| {
+        var regItem = item;
+        if (regItem.commandName.len == 0) {
+            regItem.commandName = string.mutableAlloc(self.allocator, name);
+        }
+        self.registersMap.put(name, regItem) catch |err| {
             std.debug.print("registersMap 注册异常，{?}\n", .{err});
         };
     }
 
     /// 命令列表注册名单属性参数
     pub fn commandListWith(self: *App, nameList: []const []const u8, item: RegisterItem) void {
+        var regItem = item;
+        if (regItem.commandName == null) {
+            regItem.commandName = nameList[0];
+        }
+        var cmdList = std.ArrayList([]const u8).init(self.allocator);
+        for (nameList[1..]) |name| {
+            cmdList.append(name) catch unreachable;
+        }
+        regItem.commandList = cmdList.toOwnedSlice();
         for (nameList) |name| {
             _ = self.commandWith(name, item);
         }
