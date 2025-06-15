@@ -64,6 +64,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("欢迎使用 uymas 框架实现 cli 的命令解析\n", .{});
     std.debug.print("  test            测试命令\n", .{});
     std.debug.print("       -for       用于测试循环多次花费的时间\n", .{});
+    std.debug.print("       -sum       for进行累加，用于程序执行用时统计\n", .{});
+    std.debug.print("       -inline,-I for进行累加，且单行输出\n", .{});
     std.debug.print("       -print,-P  是否输出结果\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("  time            实时显示当前时间\n", .{});
@@ -76,6 +78,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
 }
 
 // 测试命令
+//
+// pwsh: for ($i = 0; $i -lt 20; $i++){$get = .\zig-out\bin\zuymas.exe -test -for 0.034597401B -sum -inline;echo "「$($i+1)」-> $get";}
 fn testCmd(arg: *uymas.cli.Arg) void {
     // 内存分配
     // @todo 内存泄露
@@ -91,22 +95,41 @@ fn testCmd(arg: *uymas.cli.Arg) void {
 
     const spendFn = uymas.util.spendFn().begin();
     const isPrint = arg.checkOpt("print") or arg.checkOpt("P");
+    const isInline = arg.checkOpt("inline") or arg.checkOpt("I");
     defer {
-        std.debug.print("耗时：{d:.3}ms\n", .{spendFn.milliEnd()});
+        if (!isInline) {
+            std.debug.print("耗时：{d:.3}ms\n", .{spendFn.milliEnd()});
+        }
     }
 
+    const setSum = arg.checkOpt("sum");
+    var sumValue: u64 = 0;
     // for 循环
     if (arg.getInt("for")) |forNum| {
         const forNumPos = @as(usize, @intCast(forNum)); // 正整数
         for (0..forNumPos) |vN| {
-            if (!isPrint) {
+            if (setSum) {
+                sumValue += @as(u64, @intCast(vN)) + 1;
+            }
+            if (!isPrint or isInline) {
                 continue;
             }
             // 「\r」  回车(CR) ，将当前位置移到本行开头
             std.debug.print("\rIndex: {d} ", .{vN + 1});
         }
+        if (isInline) {
+            if (setSum) {
+                std.debug.print("本次耗时：{d:.3}ms， 累加值：{d}，循环数 {d}", .{ spendFn.milliEnd(), sumValue, forNum });
+                return;
+            }
+            std.debug.print("本次耗时：{d:.3}ms，循环数 {d}", .{ spendFn.milliEnd(), forNum });
+            return;
+        }
         std.debug.print("\n\n", .{});
         std.debug.print("本次已完成 {d} 次循环\n", .{forNum});
+        if (setSum) {
+            std.debug.print("本次累加值结果为 {d}\n", .{sumValue});
+        }
         return;
     }
 
