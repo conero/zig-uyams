@@ -152,6 +152,7 @@ pub const RegisterItem = struct {
         } else {
             helpMsg += "       示例命令，可在注册中定义";
         }
+        helpMsg += "\n";
 
         // 获取帮助信息
         if (self.options) |allowOptList| {

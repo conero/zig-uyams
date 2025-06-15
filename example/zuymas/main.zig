@@ -37,10 +37,12 @@ pub fn main() !void {
 
 // 默认入口
 fn indexCmd(arg: *uymas.cli.Arg) void {
+    // -test
     if (arg.checkOpt("test")) {
         testCmd(arg);
         return;
     }
+    // -version
     if (arg.checkOpt("version")) {
         versionCmd(arg);
         return;
@@ -49,6 +51,12 @@ fn indexCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("巧巧，你好呀\n", .{});
     std.debug.print("数据类型：{}\n", .{@TypeOf(uymas.Version)});
     std.debug.print("\n\n版本信息： v{s}/{s}\n", .{ uymas.Version, uymas.Release });
+
+    // Windows 系统
+    if (builtin.target.os.tag == .windows) {
+        std.debug.print("Use the following command for garbled Chinese characters in Windows PowerShell environment：\n", .{});
+        std.debug.print("    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n", .{});
+    }
 }
 
 // 帮助命令
@@ -63,6 +71,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  version         版本信息输出\n", .{});
     std.debug.print("\n  默认选择        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
+    std.debug.print("       -test      测试命令\n", .{});
     std.debug.print("\n", .{});
 }
 
