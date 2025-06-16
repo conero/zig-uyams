@@ -24,6 +24,7 @@ zig fmt ./..
 
 # 编译是指定模式
 # 支持 fast, safe, small
+# 经测试，fast 模式确实可加快运行速度
 zig build --release=fast
 # 与上一致
 zig build -Doptimize=ReleaseSafe

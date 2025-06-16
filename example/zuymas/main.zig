@@ -118,11 +118,12 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             std.debug.print("\rIndex: {d} ", .{vN + 1});
         }
         if (isInline) {
+            const spendMill = spendFn.milliEnd();
             if (setSum) {
-                std.debug.print("本次耗时：{d:.3}ms， 累加值：{d}，循环数 {d}", .{ spendFn.milliEnd(), sumValue, forNum });
+                std.debug.print("本次耗时：{d:.3}ms， 累加值：{d}，循环数 {d}", .{ spendMill, sumValue, forNum });
                 return;
             }
-            std.debug.print("本次耗时：{d:.3}ms，循环数 {d}", .{ spendFn.milliEnd(), forNum });
+            std.debug.print("本次耗时：{d:.3}ms，循环数 {d}", .{ spendMill, forNum });
             return;
         }
         std.debug.print("\n\n", .{});
