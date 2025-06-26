@@ -152,14 +152,18 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     }
 
     // cwd
+    std.debug.print("\n", .{});
     if (std.process.getCwdAlloc(allocator)) |cwdPath| {
         std.debug.print("CWD: {s}\n", .{cwdPath});
     } else |err| {
         std.debug.print("CWD 获取错误，{?}", .{err});
     }
+    std.debug.print("Root: {s}\n", .{uymas.cli.rootPath(allocator)});
 
     // 系统参数
     std.debug.print("操作系统：{any}, 架构： {any}\n", .{ builtin.os.tag, builtin.cpu.arch });
+    std.debug.print("zig 编译版本： {s}\n", .{builtin.zig_version_string});
+    std.debug.print("当前的 abi： {any}\n", .{builtin.abi});
     std.debug.print("\n", .{});
 }
 

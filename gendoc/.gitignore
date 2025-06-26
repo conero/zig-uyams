@@ -1,2 +1,4 @@
+# 文件生成 
+# zig build-lib -femit-docs=uymasdocs ../src/lib.zig
 *
 !.gitignore

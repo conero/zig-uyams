@@ -309,3 +309,22 @@ pub const App = struct {
         self.registersMap.deinit();
     }
 };
+
+// 获取当前应用所在根目录
+pub fn rootPath(alloc: std.mem.Allocator) []u8 {
+    const args_list = std.process.argsAlloc(alloc) catch |err| {
+        std.debug.print("字符串转换错误，{any}", .{err});
+        return "";
+    };
+    // const args_list = std.process.argsAlloc(alloc) catch @panic("命令初始化异常");
+    defer std.process.argsFree(alloc, args_list);
+    const binPathOr = std.fs.path.dirname(args_list[0]);
+    if (binPathOr == null) {
+        return "";
+    }
+
+    return std.fmt.allocPrintZ(alloc, "{s}", .{binPathOr.?}) catch |err| {
+        std.debug.print("字符串转换错误，{any}", .{err});
+        return "";
+    };
+}
