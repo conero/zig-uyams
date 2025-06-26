@@ -32,6 +32,7 @@ pub fn main() !void {
     // 入口函数
     app.index(indexCmd);
     app.help(helpCmd);
+    app.endHook = endHook;
     try app.run();
 }
 
@@ -71,7 +72,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
     std.debug.print("  version         版本信息输出\n", .{});
-    std.debug.print("\n  默认选择        \n", .{});
+    std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
     std.debug.print("\n", .{});
@@ -187,4 +188,9 @@ fn timeCmd(arg: *uymas.cli.Arg) void {
 // 版本信息
 fn versionCmd(_: *uymas.cli.Arg) void {
     std.debug.print("v{s}/{s}", .{ uymas.Version, uymas.Release });
+}
+
+// 结束
+fn endHook(_: *uymas.cli.Arg) void {
+    std.debug.print("\n", .{});
 }

@@ -38,6 +38,7 @@
   - feat: `Arg` 新方法 `cmdNext` 用于从重连续命令中获取下一个命令
   - feat: 新增方法`RegisterItem.genHelp` 用于初步实现帮助生成
   - feat: 新增方法 `rootPath` 用于获取当前应用所在根目录
+  - feat: 新增方法 endHook 用于执行结束时 hook 方法
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 - **string**（新增）
   - feat: 实现方法 `mutable/mutableAlloc` 用于字面字符串转变量

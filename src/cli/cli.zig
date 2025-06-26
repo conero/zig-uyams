@@ -182,6 +182,10 @@ pub const App = struct {
     indexFn: *const fn (*Arg) void = defaultIndexFn,
     helpFn: ?*const fn (*Arg) void = null,
     args: ?*Arg = null,
+    // 最后执行函数
+    endHook: ?*const fn (*Arg) void = null,
+    // 方法是否匹配
+    isMatch: bool = false,
 
     // 注册字典
     registersMap: std.StringHashMap(RegisterItem),
@@ -261,6 +265,14 @@ pub const App = struct {
         //const args = try Arg.new(self.allocator);
         const args_list = try std.process.argsAlloc(self.allocator);
         defer std.process.argsFree(self.allocator, args_list);
+        defer {
+            // 执行结束函数hook
+            if (self.isMatch) {
+                if (self.endHook) |endHook| {
+                    endHook(self.args.?);
+                }
+            }
+        }
         const args = Arg.args(args_list[1..], self.allocator);
 
         //defer args.free();
@@ -270,10 +282,12 @@ pub const App = struct {
         if (vCommand.len == 0) {
             if (self.args.?.checkOpt("help")) {
                 if (self.helpFn) |helpFn| {
+                    self.isMatch = true;
                     helpFn(self.args.?);
                     return;
                 }
             }
+            self.isMatch = true;
             self.indexFn(self.args.?);
             return;
         }
@@ -283,6 +297,7 @@ pub const App = struct {
             if (!rItem.validate(self.args.?, self.allocator)) {
                 return;
             }
+            self.isMatch = true;
             rItem.execFn(self.args.?);
             return;
         }
