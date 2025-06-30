@@ -21,6 +21,8 @@ zig init
 # zig 格式化
 zig fmt ./..
 
+# zig 本地标准文档打开
+zig std
 
 # 编译是指定模式
 # 支持 fast, safe, small

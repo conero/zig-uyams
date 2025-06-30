@@ -24,6 +24,7 @@
 
 - **example/zuymas**
   - break: 将 `example/demo` 重命名为 zuymas
+  - pref: 命令 `test` 优化使其支持数据原始数据已经初步全局命令执行桥接
 - **date**
   - feat: 新增方法`timeToDay`/`dayToTime` 用于做日期与时间的转换
   - feat: 新增 `Date.incDay` 用于做日期运行，天数加减

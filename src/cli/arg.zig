@@ -186,6 +186,14 @@ pub const Arg = struct {
         return null;
     }
 
+    // 获取对应选项数据列表
+    pub fn getList(self: *const Arg, opt: []const u8) ?[][]const u8 {
+        if (self.optionKvEntry.get(opt)) |value| {
+            return value;
+        }
+        return null;
+    }
+
     // 获取选项数据（整形）
     pub fn getInt(self: *const Arg, opt: []const u8) ?isize {
         if (self.get(opt)) |value| {

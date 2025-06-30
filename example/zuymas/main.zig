@@ -15,7 +15,10 @@ pub fn main() !void {
     //defer app.free();
 
     // test
-    _ = app.command("test", testCmd);
+    _ = app.commandWith("test", uymas.cli.RegisterItem{
+        .execFn = testCmd,
+        .validateAble = false, // 关闭选项验证
+    });
 
     // 命令注册
     var timeOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
@@ -68,6 +71,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("       -sum       for进行累加，用于程序执行用时统计\n", .{});
     std.debug.print("       -inline,-I for进行累加，且单行输出\n", .{});
     std.debug.print("       -print,-P  是否输出结果\n", .{});
+    std.debug.print("       -data      设置选项时将输出全部的数据\n", .{});
+    std.debug.print("       -exec      设置命令并执行它\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
@@ -150,6 +155,28 @@ fn testCmd(arg: *uymas.cli.Arg) void {
         std.debug.print("option({d}): {s}\n", .{ optList.len, joinOpt });
     } else |err| {
         std.debug.print("option join 错误，{?}", .{err});
+    }
+
+    // 数据打印
+    if (arg.checkOpt("data")) {
+        std.debug.print("\n---- data ---- \n", .{});
+        var iter = arg.optionKvEntry.iterator();
+        while (iter.next()) |each| {
+            std.debug.print("    {s}: {s}\n", .{ each.key_ptr.*, each.value_ptr.* });
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // 设置命令并执行它
+    if (arg.getList("exec")) |toRunCmd| {
+        std.debug.print("---- exec ---- \n", .{});
+        std.debug.print("执行命令：{any}\n", .{toRunCmd});
+        // @todo Windows 不支持 execv
+        // 执行命令并捕获输出
+        //const result = std.process.execv(allocator, toRunCmd);
+
+        // 打印命令的标准输出
+        //std.debug.print("Standard Output:\n{any}\n", .{result});
     }
 
     // cwd
