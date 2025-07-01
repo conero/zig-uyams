@@ -34,9 +34,10 @@
   - feat: `App` 初步实现不存在的选项值校验
   - feat: `App` 新增方法 `commandWith` 和 `commandListWith` 用于直接item注册、
   - feat: `App` 新增方法 `getSubCommond` 获取子命令
+  - feat: `Arg` 新方法 `cmdNext` 用于从重连续命令中获取下一个命令
+  - feat: `Arg` 新方法 `getList` 以获取命令列表
   - feat: `Option` 新增方法`getValue`用于获取选项的值
   - feat: `Option` 新增方法`exist/validate`用于判断选项是否设置及数据验证支持
-  - feat: `Arg` 新方法 `cmdNext` 用于从重连续命令中获取下一个命令
   - feat: 新增方法`RegisterItem.genHelp` 用于初步实现帮助生成
   - feat: 新增方法 `rootPath` 用于获取当前应用所在根目录
   - feat: 新增方法 endHook 用于执行结束时 hook 方法

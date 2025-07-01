@@ -72,7 +72,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("       -inline,-I for进行累加，且单行输出\n", .{});
     std.debug.print("       -print,-P  是否输出结果\n", .{});
     std.debug.print("       -data      设置选项时将输出全部的数据\n", .{});
-    std.debug.print("       -exec      设置命令并执行它\n", .{});
+    std.debug.print("       -exec ..   设置命令并执行它\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});

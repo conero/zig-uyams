@@ -20,6 +20,7 @@ zig init
 
 # zig 格式化
 zig fmt ./..
+zig 
 
 # zig 本地标准文档打开
 zig std
