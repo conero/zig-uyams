@@ -73,6 +73,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("       -print,-P  是否输出结果\n", .{});
     std.debug.print("       -data      设置选项时将输出全部的数据\n", .{});
     std.debug.print("       -exec ..   设置命令并执行它\n", .{});
+    std.debug.print("       -exec-1    使用命令行执行方式1，用于测试\n", .{});
     std.debug.print("  demo            示例多命令注册（dm）\n", .{});
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
@@ -176,22 +177,26 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             std.debug.print("join 错误，{?}\n", .{err});
         }
 
-        // 方式1
-        // const result = runAndCaptureOutput(allocator, toRunCmd) catch |err| {
-        //     std.debug.print("执行命令错误，{?}\n", .{err});
-        //     return;
-        // };
+        if (arg.checkOpt("exec-1")) { // 方式1，用于测试
+            std.debug.print("使用实验性的方法 1 进行命令执行……\n", .{});
+            const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
+                std.debug.print("执行命令错误，{?}\n", .{err});
+                return;
+            };
 
-        // 方式2
-        const result = runAndCaptureOutputMth2(allocator, toRunCmd) catch |err| {
-            std.debug.print("执行命令错误，{?}\n", .{err});
-            return;
-        };
+            std.debug.print("---- exec result ---- \n", .{});
+            std.debug.print("输出内容如下：\n{s}", .{result.stdout});
+            std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
+        } else {
+            const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
+                std.debug.print("执行命令错误，{?}\n", .{err});
+                return;
+            };
 
-        // 创建子进程
-        std.debug.print("---- exec result ---- \n", .{});
-        std.debug.print("输出内容如下：\n{s}", .{result.stdout});
-        std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
+            std.debug.print("---- exec result ---- \n", .{});
+            std.debug.print("输出内容如下：\n{s}", .{result.stdout});
+            std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
+        }
     }
 
     // cwd
@@ -263,39 +268,4 @@ fn runAndCaptureOutput(allocator: std.mem.Allocator, cmd: [][]const u8) !struct 
         .stderr = stderr,
         .exit_code = exit_code,
     };
-}
-
-fn runAndCaptureOutputMth2(allocator: std.mem.Allocator, cmd: [][]const u8) !struct {
-    stdout: []u8,
-    stderr: []u8,
-    exit_code: i32,
-} {
-    var child = std.process.Child.init(cmd, allocator);
-    child.stdout_behavior = .Pipe;
-    child.stderr_behavior = .Pipe;
-
-    var stdout: std.ArrayListUnmanaged(u8) = .empty;
-    defer stdout.deinit(allocator);
-    var stderr: std.ArrayListUnmanaged(u8) = .empty;
-    defer stderr.deinit(allocator);
-
-    try child.spawn();
-    try child.collectOutput(allocator, &stdout, &stderr, 1024 * 1024);
-    const term = try child.wait();
-    const exit_code = switch (term) {
-        .Exited => |code| code,
-        else => 0,
-    };
-
-    return .{
-        .stdout = listToString(u8, stdout, allocator),
-        .stderr = listToString(u8, stderr, allocator),
-        .exit_code = exit_code,
-    };
-}
-
-// list 转换为字符串
-fn listToString(comptime T: type, list: std.ArrayListUnmanaged(T), alloc: std.mem.Allocator) []u8 {
-    // 将 ArrayListUnmanaged(u8) 转换为 Zig 字符串
-    return std.fmt.allocPrint(alloc, "{s}", .{std.mem.sliceTo(list.items, 0)}) catch return "";
 }

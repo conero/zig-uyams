@@ -41,11 +41,13 @@
   - feat: 新增方法`RegisterItem.genHelp` 用于初步实现帮助生成
   - feat: 新增方法 `rootPath` 用于获取当前应用所在根目录
   - feat: 新增方法 endHook 用于执行结束时 hook 方法
+  - feat: 新增方法 `execAlloc` 以进行快捷的命令行桥接执行
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 - **string**（新增）
   - feat: 实现方法 `mutable/mutableAlloc` 用于字面字符串转变量
   - feat: 新增 `format` 用于无异常格式化内容
-
+  - feat: 新增方法 `unmanagedListStr` 以将ArrayListUnmanaged转为字符串
+  
 - **其他**
   - pref: 删除 zig init 初始化创建的模板函数
 

@@ -343,3 +343,33 @@ pub fn rootPath(alloc: std.mem.Allocator) []u8 {
         return "";
     };
 }
+
+/// 使用子进程执行命令（ChildProcess），并返回结果
+pub fn execAlloc(cmd: [][]const u8, allocator: std.mem.Allocator) !struct {
+    stdout: []u8,
+    stderr: []u8,
+    exit_code: i32,
+} {
+    var child = std.process.Child.init(cmd, allocator);
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Pipe;
+
+    var stdout: std.ArrayListUnmanaged(u8) = .empty;
+    defer stdout.deinit(allocator);
+    var stderr: std.ArrayListUnmanaged(u8) = .empty;
+    defer stderr.deinit(allocator);
+
+    try child.spawn();
+    try child.collectOutput(allocator, &stdout, &stderr, 1024 * 1024);
+    const term = try child.wait();
+    const exit_code = switch (term) {
+        .Exited => |code| code,
+        else => 0,
+    };
+
+    return .{
+        .stdout = string.unmanagedListStr(u8, stdout, allocator),
+        .stderr = string.unmanagedListStr(u8, stderr, allocator),
+        .exit_code = exit_code,
+    };
+}
