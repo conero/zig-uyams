@@ -176,23 +176,14 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             std.debug.print("join 错误，{?}\n", .{err});
         }
 
-        // 创建子进程
-        var runner = std.process.Child.init(toRunCmd, allocator);
-
-        // 等待子进程完成
-        const term = runner.spawnAndWait() catch |err| {
+        const result = runAndCaptureOutput(allocator, toRunCmd) catch |err| {
             std.debug.print("执行命令错误，{?}\n", .{err});
             return;
         };
-
-        switch (term) {
-            .Exited => |code| {
-                const fmt = "\n----- EXIT CODE: {} -----\n";
-                std.debug.print(fmt, .{code});
-                // try std.io.getStdOut().writer().print(fmt, .{code});
-            },
-            else => std.debug.panic("child process crashed: {}\n", .{term}),
-        }
+        // 创建子进程
+        std.debug.print("---- exec result ---- \n", .{});
+        std.debug.print("输出内容如下：\n{s}", .{result.stdout});
+        std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
     }
 
     // cwd
@@ -236,4 +227,32 @@ fn versionCmd(_: *uymas.cli.Arg) void {
 // 结束
 fn endHook(_: *uymas.cli.Arg) void {
     std.debug.print("\n", .{});
+}
+
+// 执行并捕获输出
+fn runAndCaptureOutput(allocator: std.mem.Allocator, cmd: [][]const u8) !struct {
+    stdout: []u8,
+    stderr: []u8,
+    exit_code: i32,
+} {
+    var child = std.process.Child.init(cmd, allocator);
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Pipe;
+
+    try child.spawn();
+
+    const stdout = try child.stdout.?.reader().readAllAlloc(allocator, 1024 * 1024);
+    const stderr = try child.stderr.?.reader().readAllAlloc(allocator, 1024 * 1024);
+
+    const term = try child.wait();
+    const exit_code = switch (term) {
+        .Exited => |code| code,
+        else => 0,
+    };
+
+    return .{
+        .stdout = stdout,
+        .stderr = stderr,
+        .exit_code = exit_code,
+    };
 }
