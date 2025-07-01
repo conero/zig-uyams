@@ -169,14 +169,30 @@ fn testCmd(arg: *uymas.cli.Arg) void {
 
     // 设置命令并执行它
     if (arg.getList("exec")) |toRunCmd| {
-        std.debug.print("---- exec ---- \n", .{});
-        std.debug.print("执行命令：{any}\n", .{toRunCmd});
-        // @todo Windows 不支持 execv
-        // 执行命令并捕获输出
-        //const result = std.process.execv(allocator, toRunCmd);
+        std.debug.print("\n---- exec ---- \n", .{});
+        if (std.mem.join(allocator, " ", toRunCmd)) |joinOpt| {
+            std.debug.print("执行命令：{s}\n", .{joinOpt});
+        } else |err| {
+            std.debug.print("join 错误，{?}\n", .{err});
+        }
 
-        // 打印命令的标准输出
-        //std.debug.print("Standard Output:\n{any}\n", .{result});
+        // 创建子进程
+        var runner = std.process.Child.init(toRunCmd, allocator);
+
+        // 等待子进程完成
+        const term = runner.spawnAndWait() catch |err| {
+            std.debug.print("执行命令错误，{?}\n", .{err});
+            return;
+        };
+
+        switch (term) {
+            .Exited => |code| {
+                const fmt = "\n----- EXIT CODE: {} -----\n";
+                std.debug.print(fmt, .{code});
+                // try std.io.getStdOut().writer().print(fmt, .{code});
+            },
+            else => std.debug.panic("child process crashed: {}\n", .{term}),
+        }
     }
 
     // cwd
