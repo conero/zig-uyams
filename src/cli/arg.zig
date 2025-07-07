@@ -61,7 +61,7 @@ pub const Arg = struct {
                             };
                         }
                     }
-                    entryValue.append(optValue) catch |err| {
+                    entryValue.append(argEscape(optValue)) catch |err| {
                         std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
                     };
                     optionKvEntry.put(rawOptName, entryValue.items) catch |err| {
@@ -99,7 +99,7 @@ pub const Arg = struct {
                         };
                     }
                 }
-                entryValue.append(arg) catch |err| {
+                entryValue.append(argEscape(arg)) catch |err| {
                     std.debug.print("optionKv 值写追加错误，更新，{?}\n", .{err});
                 };
                 optionKvEntry.put(lastOpt, entryValue.items) catch |err| {
@@ -288,4 +288,16 @@ pub fn detectOption(vString: []u8, supportLong: bool) struct { []u8, bool, ?[]u8
         return .{ vString[1..], true, null };
     }
     return .{ "", false, null };
+}
+
+// 提供的参数的转义化处理
+pub fn argEscape(vArg: []u8) []u8 {
+    var vargEscape = vArg;
+    // 选项转义(开头) `\-  => -`
+    if (std.mem.startsWith(u8, vArg, "\\-")) {
+        vargEscape = vArg[1..];
+    }
+
+    // @todo 其他
+    return vargEscape;
 }
