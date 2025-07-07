@@ -88,18 +88,6 @@ fn helpCmd(_: *uymas.cli.Arg) void {
 //
 // pwsh: for ($i = 0; $i -lt 20; $i++){$get = .\zig-out\bin\zuymas.exe -test -for 0.034597401B -sum -inline;echo "「$($i+1)」-> $get";}
 fn testCmd(arg: *uymas.cli.Arg) void {
-    // 内存分配
-    // @todo 内存泄露
-    // 使用模型，一定要是变量，不能是常量
-    //var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    // 拿到一个allocator
-    // const allocator = gpa.allocator();
-    // defer 用于执行general_purpose_allocator善后工作
-    // defer {
-    //    const deinit_status = gpa.deinit();
-    //    if (deinit_status == .leak) @panic("TEST FAIL");
-    //}
-
     const spendFn = uymas.util.spendFn().begin();
     const isPrint = arg.checkOpt("print") or arg.checkOpt("P");
     const isInline = arg.checkOpt("inline") or arg.checkOpt("I");
@@ -200,7 +188,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     }
 
     // cwd
-    std.debug.print("\n", .{});
+    std.debug.print("\n---- info ---- \n", .{});
     if (std.process.getCwdAlloc(allocator)) |cwdPath| {
         std.debug.print("CWD: {s}\n", .{cwdPath});
     } else |err| {
@@ -224,7 +212,7 @@ fn demoCmd(_: *uymas.cli.Arg) void {
 // 时间测试
 fn timeCmd(arg: *uymas.cli.Arg) void {
     const tzIndex = arg.getInt("tz") orelse 8;
-    std.debug.print("正在生成时间（UTC-{d}）\n\n", .{tzIndex});
+    std.debug.print("基于当前本地系统时间（UTC-{d}）\n\n", .{tzIndex});
     while (true) {
         std.time.sleep(std.time.ns_per_s);
         var now = uymas.date.Date.now();
