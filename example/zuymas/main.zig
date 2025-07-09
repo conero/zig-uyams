@@ -200,6 +200,12 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("操作系统：{any}, 架构： {any}\n", .{ builtin.os.tag, builtin.cpu.arch });
     std.debug.print("zig 编译版本： {s}\n", .{builtin.zig_version_string});
     std.debug.print("当前的 abi： {any}\n", .{builtin.abi});
+    std.debug.print("random: {d}\n", .{get_random().int(u64)});
+    if (std.process.totalSystemMemory()) |total_mem| {
+        std.debug.print("内存大小： {d}B\n", .{total_mem});
+    } else |err| {
+        std.debug.print("获取内存失败： {s}\n", .{@errorName(err)});
+    }
     std.debug.print("\n", .{});
 }
 
@@ -256,4 +262,10 @@ fn runAndCaptureOutput(allocator: std.mem.Allocator, cmd: [][]const u8) !struct 
         .stderr = stderr,
         .exit_code = exit_code,
     };
+}
+
+// 获取数据数字
+fn get_random() std.Random {
+    var rng_inner = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
+    return std.Random.init(&rng_inner, std.Random.DefaultPrng.fill);
 }
