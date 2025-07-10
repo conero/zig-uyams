@@ -202,7 +202,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("当前的 abi： {any}\n", .{builtin.abi});
     std.debug.print("random: {d}\n", .{get_random().int(u64)});
     if (std.process.totalSystemMemory()) |total_mem| {
-        std.debug.print("内存大小： {d}B\n", .{total_mem});
+        std.debug.print("内存大小： {any}\n", .{uymas.number.formatSize(total_mem)});
     } else |err| {
         std.debug.print("获取内存失败： {s}\n", .{@errorName(err)});
     }

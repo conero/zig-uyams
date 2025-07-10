@@ -164,6 +164,25 @@ pub fn simplify(alloc: std.mem.Allocator, vNumber: isize) []u8 {
     return simStr;
 }
 
+/// 字节大小转换
+pub fn formatSize(bytes: u64) []u8 {
+    const units = [_][]const u8{ "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+    var size: f64 = @floatFromInt(bytes);
+    var unit_index: usize = 0;
+
+    while (size >= 1024.0 and unit_index < units.len - 1) {
+        unit_index += 1;
+        size /= 1024.0;
+    }
+
+    var buffer: [20]u8 = undefined;
+    const formatted = std.fmt.bufPrint(buffer[0..], "{any} {s}", .{ size, units[unit_index] }) catch |err| {
+        std.debug.print("字符串转数字错误，{any}\n", .{err});
+        return "";
+    };
+    return formatted;
+}
+
 test "strToInt base test" {
     // case 1
     var vNum = strToInt(std.heap.smp_allocator, "100_000");
