@@ -12,6 +12,9 @@ pub fn main() !void {
     const allocator = arena.allocator();
     // 命令行运行
     var app = uymas.cli.App.new(allocator);
+    // app.config = uymas.cli.AppConfig{
+    //     .strictValid = false,
+    // };
     //defer app.free();
 
     // test

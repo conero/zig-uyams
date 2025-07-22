@@ -174,6 +174,18 @@ pub const RegisterItem = struct {
     }
 };
 
+/// 命令行选项
+pub const AppConfig = struct {
+    // 命令行名称
+    name: ?[]const u8 = null,
+    // 命令行描述
+    description: ?[]const u8 = null,
+    // 命令行作者
+    author: ?[]const u8 = null,
+    // 严格验证，即未设置的选项，则提示
+    strictValid: bool = true,
+};
+
 /// cli 应用处理器
 pub const App = struct {
     // 内存分配其
@@ -186,6 +198,8 @@ pub const App = struct {
     endHook: ?*const fn (*Arg) void = null,
     // 方法是否匹配
     isMatch: bool = false,
+    // 配置信息
+    config: AppConfig = AppConfig{},
 
     // 注册字典
     registersMap: std.StringHashMap(RegisterItem),
@@ -259,6 +273,19 @@ pub const App = struct {
         self.helpFn = runFn;
     }
 
+    /// 选项是否有效，用于验证
+    fn optionIsValid(self: *App, args: *Arg) bool {
+        // 命令注册未设置选项，且严格模式时进行验证
+        if (!self.config.strictValid) {
+            return true;
+        }
+        for (args.getOptList()) |opt| {
+            std.debug.print("{s}: 选项不支持，请查看帮助命令/选项\n", .{opt});
+            return false;
+        }
+        return true;
+    }
+
     // 运行命令程序
     pub fn run(self: *App) !void {
         // var args = try Arg.new(std.heap.c_allocator);
@@ -288,6 +315,10 @@ pub const App = struct {
                 }
             }
             self.isMatch = true;
+            // 命令注册未设置选项，且严格模式时进行验证
+            if (!self.optionIsValid(self.args.?)) {
+                return;
+            }
             self.indexFn(self.args.?);
             return;
         }
@@ -299,6 +330,11 @@ pub const App = struct {
             }
             self.isMatch = true;
             rItem.execFn(self.args.?);
+            return;
+        }
+
+        // 命令注册未设置选项，且严格模式时进行验证
+        if (!self.optionIsValid(self.args.?)) {
             return;
         }
 
