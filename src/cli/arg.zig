@@ -80,8 +80,8 @@ pub const Arg = struct {
                 };
             }
             // 认定第一个参数为命令行
-            if (command.len == 0 and index == 0) {
-                //std.debug.print("arg: {s}\n", .{arg});
+            // std.debug.print("command.len={d}, command={s}, arg={s}, index={d}\n", .{command.len, command, arg, index});
+            if (index == 0 and command.len == 0) {
                 command = arg;
                 continue;
             } else if (index == 1 and command.len > 0) {
@@ -112,6 +112,7 @@ pub const Arg = struct {
         if (allocator.dupe(u8, command)) |cpName| {
             return Arg{
                 .command = cpName,
+                .subCommand = subCommand,
                 .allocator = allocator,
                 .optionList = optionList,
                 .optionKvEntry = optionKvEntry,
