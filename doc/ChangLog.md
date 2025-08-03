@@ -25,6 +25,7 @@
 > 功能实现
 
 - **example/zuymas**
+  - feat: 加入 tell 命令用于实现网络测试命令
   - break: 将 `example/demo` 重命名为 zuymas
   - pref: 命令 `test` 优化使其支持数据原始数据已经初步全局命令执行桥接
 - **date**

@@ -35,6 +35,10 @@ pub fn main() !void {
     // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
     const vDemoCmd = [_][]const u8{ "demo", "dm" };
     _ = app.commandList(&vDemoCmd, demoCmd);
+
+    // 网络命令
+    _ = app.command("tell", tellCmd);
+
     // 入口函数
     app.index(indexCmd);
     app.help(helpCmd);
@@ -81,6 +85,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  time            实时显示当前时间\n", .{});
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
     std.debug.print("  version         版本信息输出\n", .{});
+    std.debug.print("  tell [addr]     网络地址测试\n", .{});
     std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
@@ -140,6 +145,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("---- test ---- \n", .{});
     // 异常：error.Unexpected: GetLastError(998): 内存位置访问无效。
     std.debug.print("commond: {s}\n", .{arg.getCommand()});
+    std.debug.print("subCommand: {s}\n", .{arg.getSubCommand()});
 
     // 选项
     const optList = arg.getOptList();
@@ -271,4 +277,46 @@ fn runAndCaptureOutput(allocator: std.mem.Allocator, cmd: [][]const u8) !struct 
 fn get_random() std.Random {
     var rng_inner = std.Random.DefaultPrng.init(@intCast(std.time.milliTimestamp()));
     return std.Random.init(&rng_inner, std.Random.DefaultPrng.fill);
+}
+
+// 网络测试命令
+fn tellCmd(arg: *uymas.cli.Arg) void {
+    var addr: []u8 = uymas.string.mutable("127.0.0.1:80");
+    if (arg.subCommand.len > 0) {
+        addr = uymas.string.mutable(arg.subCommand);
+    }
+
+    // 图片分割
+    var splitIter = std.mem.splitAny(u8, addr, ":");
+    var port: u16 = 80;
+    var host: []u8 = uymas.string.mutable("127.0.0.1");
+    var index: usize = 0;
+    while (splitIter.next()) |next| {
+        if (index == 0) {
+            host = uymas.string.mutable(next);
+        } else if (index == 1) { // 端口号
+            port = std.fmt.parseInt(u16, next, 10) catch 80;
+        }
+        index += 1;
+    }
+
+    // 地址解析
+    const reqAddrResult = std.net.Address.parseIp4(host, port);
+    var reqAddr: std.net.Address = undefined;
+    if (reqAddrResult) |reqAddrOpt| {
+        std.debug.print("请求地址: {?}\n", .{reqAddrOpt});
+        reqAddr = reqAddrOpt;
+    } else |err| {
+        std.debug.print("地址（{s}:{d}）解析错误，{?}", .{ host, port, err });
+        return;
+    }
+    //std.debug.print("测试地址 reqAddr: {any}\n", .{reqAddrResult});
+    if (std.net.tcpConnectToAddress(reqAddr)) |conn| {
+        defer conn.close();
+        std.debug.print("连接成功\n", .{});
+        std.debug.print("开始发送数据:{?}\n", .{conn});
+    } else |err| {
+        std.debug.print("连接错误，{?}\n", .{err});
+        return;
+    }
 }
