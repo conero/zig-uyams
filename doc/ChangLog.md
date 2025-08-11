@@ -50,8 +50,10 @@
 - **string**（新增）
   - feat: 实现方法 `mutable/mutableAlloc` 用于字面字符串转变量
   - feat: 新增 `format` 用于无异常格式化内容
-  - feat: 新增方法 `unmanagedListStr` 以将ArrayListUnmanaged转为字符串
-  
+  - feat: 新增方法 `unmanagedListStr` 以将ArrayListUnmanaged转为字符串 
+- **number**
+  - feat: 新增方法 `formatSizeAlloc` 用于格式化字节类型大小单位转换
+
 - **其他**
   - pref: 删除 zig init 初始化创建的模板函数
 

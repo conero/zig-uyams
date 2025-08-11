@@ -1,4 +1,5 @@
 const std = @import("std");
+const string = @import("string.zig");
 
 /// 字符串转数字，支持如"100_000"、"100,000"这种带下划线的数字
 ///
@@ -181,6 +182,20 @@ pub fn formatSize(bytes: u64) []u8 {
         return "";
     };
     return formatted;
+}
+
+/// 字节大小转换
+pub fn formatSizeAlloc(alloc: std.mem.Allocator, bytes: u64) []u8 {
+    const units = [_][]const u8{ "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+    var size: f64 = @floatFromInt(bytes);
+    var unit_index: usize = 0;
+
+    while (size >= 1024.0 and unit_index < units.len - 1) {
+        unit_index += 1;
+        size /= 1024.0;
+    }
+
+    return string.format(alloc, "{d:.8} {s}", .{ size, units[unit_index] });
 }
 
 test "strToInt base test" {

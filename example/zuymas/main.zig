@@ -210,8 +210,11 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("zig 编译版本： {s}\n", .{builtin.zig_version_string});
     std.debug.print("当前的 abi： {any}\n", .{builtin.abi});
     std.debug.print("random: {d}\n", .{get_random().int(u64)});
+    std.debug.print("thread ID: {d}\n", .{std.Thread.getCurrentId()});
+    const cpuCpunt = std.Thread.getCpuCount() catch 0;
+    std.debug.print("CPU数量： {d}\n", .{cpuCpunt});
     if (std.process.totalSystemMemory()) |total_mem| {
-        std.debug.print("内存大小： {any}\n", .{uymas.number.formatSize(total_mem)});
+        std.debug.print("内存大小： {s} (字节={d})\n", .{ uymas.number.formatSizeAlloc(allocator, total_mem), total_mem });
     } else |err| {
         std.debug.print("获取内存失败： {s}\n", .{@errorName(err)});
     }
@@ -311,6 +314,11 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
         return;
     }
     //std.debug.print("测试地址 reqAddr: {any}\n", .{reqAddrResult});
+    const stream = std.net.tcpConnectToHost(std.heap.page_allocator, host, port) catch |err| {
+        std.debug.print("无法连接到 {s}:{d}，{?}\n", .{ host, port, err });
+        return;
+    };
+    std.debug.print("已连接到 {?}\n", .{stream});
     if (std.net.tcpConnectToAddress(reqAddr)) |conn| {
         defer conn.close();
         std.debug.print("连接成功\n", .{});
