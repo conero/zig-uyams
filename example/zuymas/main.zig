@@ -39,6 +39,10 @@ pub fn main() !void {
     // 网络命令
     _ = app.command("tell", tellCmd);
 
+    // 交互式输入测试
+    const interCmdName = [_][]const u8{ "interactive", "inter" };
+    _ = app.commandList(&interCmdName, interactCmd);
+
     // 入口函数
     app.index(indexCmd);
     app.help(helpCmd);
@@ -86,6 +90,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("       -tz [UTC]  指定时区\n", .{});
     std.debug.print("  version         版本信息输出\n", .{});
     std.debug.print("  tell [addr]     网络地址测试\n", .{});
+    std.debug.print("  interact,inter  交互式输入参数\n", .{});
     std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
@@ -326,5 +331,38 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
     } else |err| {
         std.debug.print("连接错误，{?}\n", .{err});
         return;
+    }
+}
+
+// 交互命令
+fn interactCmd(_: *uymas.cli.Arg) void {
+    // 获取标准输入流
+    const stdin = std.io.getStdIn().reader();
+    // 获取标准输出流（用于打印提示信息）
+    const stdout = std.io.getStdOut().writer();
+
+    // 打印提示信息
+    stdout.print("inter> ", .{}) catch unreachable;
+    while (true) {
+        // 创建缓冲区存储输入
+        var buffer: [1024]u8 = undefined;
+        // 读取输入，直到换行符或缓冲区满
+        const input = stdin.readUntilDelimiterOrEof(&buffer, '\n') catch |err| {
+            stdout.print("读取文件错误，{any}\n", .{err}) catch unreachable;
+            break;
+        };
+        if (input) |ipt| {
+            //const iptValue: []u8 = ipt;
+            // 去除可能的回车符（Windows 系统）
+            const iptValue = std.mem.trimRight(u8, ipt, "\r");
+            if (std.mem.eql(u8, iptValue, "exit") or std.mem.eql(u8, iptValue, "quit")) {
+                //if (std.mem.eql(u8, ipt, "exit") or std.mem.eql(u8, ipt, "quit")) {
+                stdout.print("退出程序\n", .{}) catch unreachable;
+                break;
+            }
+            stdout.print("输入数据(input)：{s}\n", .{ipt}) catch unreachable;
+        }
+        //stdout.print("输入数据：{any}\n", .{buffer}) catch unreachable;
+        stdout.print("inter> ", .{}) catch unreachable;
     }
 }

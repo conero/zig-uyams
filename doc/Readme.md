@@ -41,6 +41,9 @@ zig build run
 # 跨环境编译
 zig build -Doptimize=ReleaseSmall -Dtarget=x86_64-linux-gnu
 
+# zig build 打印相信输出日志
+zig build -freference-trace=10
+
 # 文档生成
 cd gendoc
 zig build-lib -femit-docs=uymasdocs ../src/lib.zig
