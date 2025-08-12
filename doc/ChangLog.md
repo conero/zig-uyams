@@ -27,6 +27,7 @@
 - **example/zuymas**
   - feat: 加入 tell 命令用于实现网络测试命令
   - feat: 新增命令 interact 用于做交互输入输出
+  - feat: 新增命令 cat 用于做文件读取测试
   - break: 将 `example/demo` 重命名为 zuymas
   - pref: 命令 `test` 优化使其支持数据原始数据已经初步全局命令执行桥接
 - **date**
@@ -47,6 +48,7 @@
   - feat: 新增方法 endHook 用于执行结束时 hook 方法
   - feat: 新增方法 `execAlloc` 以进行快捷的命令行桥接执行
   - feat: 新增结构体 `AppConfig` 用于设置命令是否严格验证选项
+  - feat: 新增子集包 `input`，用于命令行输出处理
   - break: `App.registersMap` 由单函数调整为struct 扩展操作
 - **string**（新增）
   - feat: 实现方法 `mutable/mutableAlloc` 用于字面字符串转变量

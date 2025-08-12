@@ -4,8 +4,9 @@ const std = @import("std");
 const variable = @import("../variable.zig");
 const string = @import("../string.zig");
 
-/// 命令行处理；
+/// 命令行处理，以及导出库
 pub const Arg = arg.Arg;
+pub const input = @import("./input.zig");
 
 // 默认入口命令
 fn defaultIndexFn(_: *Arg) void {

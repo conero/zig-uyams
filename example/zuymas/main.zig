@@ -42,6 +42,8 @@ pub fn main() !void {
     // 交互式输入测试
     const interCmdName = [_][]const u8{ "interactive", "inter" };
     _ = app.commandList(&interCmdName, interactCmd);
+    // 文件读写测试
+    _ = app.command("cat", catCmd);
 
     // 入口函数
     app.index(indexCmd);
@@ -91,6 +93,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  version         版本信息输出\n", .{});
     std.debug.print("  tell [addr]     网络地址测试\n", .{});
     std.debug.print("  interact,inter  交互式输入参数\n", .{});
+    std.debug.print("  cat [path]      文件读取或写入\n", .{});
     std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
@@ -365,4 +368,56 @@ fn interactCmd(_: *uymas.cli.Arg) void {
         //stdout.print("输入数据：{any}\n", .{buffer}) catch unreachable;
         stdout.print("inter> ", .{}) catch unreachable;
     }
+}
+
+// 文件读写测试
+fn catCmd(arg: *uymas.cli.Arg) void {
+    const filenamme = arg.getSubCommand();
+    if (filenamme.len == 0) {
+        std.debug.print("请先指定文件名", .{});
+        return;
+    }
+
+    // 文件逐行读取
+    var file = std.fs.cwd().openFile(filenamme, .{}) catch |err| {
+        std.debug.print("无法打开文件：{s}\n", .{@errorName(err)});
+        return;
+    };
+    defer file.close();
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var reader = buf_reader.reader();
+    var lineCount: usize = 0;
+    while (reader.readUntilDelimiterOrEofAlloc(std.heap.page_allocator, '\n', 1024) catch null) |line| {
+        lineCount += 1;
+        if (lineCount % 10 == 0) {
+            _ = uymas.cli.input.optional("Entry to continue: ");
+        }
+        std.debug.print("{s}\n", .{line});
+    }
+
+    // 文件一次性读取
+    // 文件读取
+    // var file = std.fs.cwd().openFile(filenamme, .{}) catch |err| {
+    //     std.debug.print("无法打开文件：{s}\n", .{@errorName(err)});
+    //     return;
+    // };
+    // defer file.close();
+    // var buf: [1024]u8 = undefined;
+    // var lineCount: usize = 0;
+    // while (true) {
+    //     lineCount += 1;
+    //     const size = file.read(&buf) catch |err| {
+    //         std.debug.print("无法读取文件：{s}\n", .{@errorName(err)});
+    //         return;
+    //     };
+    //     if (size == 0) {
+    //         break;
+    //     }
+    //     std.io.getStdOut().writeAll(buf[0..size]) catch |err| {
+    //         std.debug.print("无法写入标准输出：{s}\n", .{@errorName(err)});
+    //     };
+    //     if (lineCount % 10 == 0){
+    //         _ = uymas.cli.input.optional("Entry to continue: ");
+    //     }
+    // }
 }
