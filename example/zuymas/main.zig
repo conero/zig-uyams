@@ -44,6 +44,8 @@ pub fn main() !void {
     _ = app.commandList(&interCmdName, interactCmd);
     // 文件读写测试
     _ = app.command("cat", catCmd);
+    // 并发测试
+    _ = app.command("thread", threadCmd);
 
     // 入口函数
     app.index(indexCmd);
@@ -94,6 +96,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  tell [addr]     网络地址测试\n", .{});
     std.debug.print("  interact,inter  交互式输入参数\n", .{});
     std.debug.print("  cat [path]      文件读取或写入\n", .{});
+    std.debug.print("  thread          并发测试\n", .{});
+    std.debug.print("       -count [10]  指定并发数\n", .{});
     std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
@@ -420,4 +424,32 @@ fn catCmd(arg: *uymas.cli.Arg) void {
     //         _ = uymas.cli.input.optional("Entry to continue: ");
     //     }
     // }
+}
+
+fn runEachThread(index: usize) void {
+    std.debug.print("Thread {d} is running\n", .{index});
+    std.Thread.sleep(std.time.ns_per_s);
+}
+
+// 并发测试命令
+fn threadCmd(arg: *uymas.cli.Arg) void {
+    const count = arg.getInt("count") orelse 10;
+    const allocator = std.heap.page_allocator;
+    const countUzie = @as(usize, @intCast(count));
+    var threadGroup = allocator.alloc(std.Thread, countUzie) catch |err| {
+        std.debug.print("切片分配失败，Error: {s}\n", .{@errorName(err)});
+        return;
+    };
+
+    // 执行进程
+    for (0..countUzie) |i| {
+        threadGroup[i] = std.Thread.spawn(.{}, runEachThread, .{i}) catch |err| {
+            std.debug.print("创建线程失败，Error: {s}\n", .{@errorName(err)});
+            continue;
+        };
+    }
+
+    for (threadGroup) |thread| {
+        thread.join();
+    }
 }

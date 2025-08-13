@@ -28,6 +28,7 @@
   - feat: 加入 tell 命令用于实现网络测试命令
   - feat: 新增命令 interact 用于做交互输入输出
   - feat: 新增命令 cat 用于做文件读取测试
+  - feat: 新增命令 thread 用于错误并发测试
   - break: 将 `example/demo` 重命名为 zuymas
   - pref: 命令 `test` 优化使其支持数据原始数据已经初步全局命令执行桥接
 - **date**
