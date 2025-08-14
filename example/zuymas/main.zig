@@ -45,7 +45,15 @@ pub fn main() !void {
     // 文件读写测试
     _ = app.command("cat", catCmd);
     // 并发测试
-    _ = app.command("thread", threadCmd);
+    //_ = app.command("thread", threadCmd);
+    var threadOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
+    try threadOptionList.append(uymas.cli.Option{ .name = "count" });
+    try threadOptionList.append(uymas.cli.Option{ .name = "silent" });
+    try threadOptionList.append(uymas.cli.Option{ .name = "sleep" });
+    _ = app.commandWith("thread", uymas.cli.RegisterItem{
+        .execFn = threadCmd,
+        .options = threadOptionList,
+    });
 
     // 入口函数
     app.index(indexCmd);
@@ -97,7 +105,9 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  interact,inter  交互式输入参数\n", .{});
     std.debug.print("  cat [path]      文件读取或写入\n", .{});
     std.debug.print("  thread          并发测试\n", .{});
-    std.debug.print("       -count [10]  指定并发数\n", .{});
+    std.debug.print("       -count [10]    指定并发数\n", .{});
+    std.debug.print("       -sleep [1000]  指定睡眠数，毫秒级\n", .{});
+    std.debug.print("       -silent        静默执行，不输出调试信息\n", .{});
     std.debug.print("\n  全局选项        \n", .{});
     std.debug.print("       -version   数据版本信息\n", .{});
     std.debug.print("       -test      测试命令\n", .{});
@@ -426,14 +436,29 @@ fn catCmd(arg: *uymas.cli.Arg) void {
     // }
 }
 
-fn runEachThread(index: usize) void {
-    std.debug.print("Thread {d} is running\n", .{index});
-    std.Thread.sleep(std.time.ns_per_s);
+fn runEachThread(index: usize, isSilent: bool, sleepMs: usize) void {
+    if (!isSilent) {
+        std.debug.print("Thread {d} is running\n", .{index});
+    }
+    std.Thread.sleep(std.time.ns_per_ms * sleepMs);
+    if (!isSilent) {
+        std.debug.print("Thread {d} is done\n", .{index});
+    }
 }
 
 // 并发测试命令
 fn threadCmd(arg: *uymas.cli.Arg) void {
+    const spendFn = uymas.util.spendFn().begin();
+    // 匿名函数
+    defer (struct {
+        fn end(vSdFn: uymas.util.spendFn()) void {
+            std.debug.print("\n耗时：{d:.2}ms\n", .{vSdFn.milliEnd()});
+        }
+    }).end(spendFn);
     const count = arg.getInt("count") orelse 10;
+    const isSilent = arg.checkOpt("silent");
+    var sleepMs = arg.getInt("sleep") orelse 1000;
+    sleepMs = if (sleepMs > 0) sleepMs else 1000;
     const allocator = std.heap.page_allocator;
     const countUzie = @as(usize, @intCast(count));
     var threadGroup = allocator.alloc(std.Thread, countUzie) catch |err| {
@@ -443,7 +468,7 @@ fn threadCmd(arg: *uymas.cli.Arg) void {
 
     // 执行进程
     for (0..countUzie) |i| {
-        threadGroup[i] = std.Thread.spawn(.{}, runEachThread, .{i}) catch |err| {
+        threadGroup[i] = std.Thread.spawn(.{}, runEachThread, .{ i, isSilent, @as(usize, @intCast(sleepMs)) }) catch |err| {
             std.debug.print("创建线程失败，Error: {s}\n", .{@errorName(err)});
             continue;
         };
