@@ -515,15 +515,26 @@ fn echoHttp(port: u16) !void {
 fn handleHttp(conn: std.net.Server.Connection) !void {
     var buf: [1024]u8 = undefined;
     while (true) {
-        const bytes_read = try conn.stream.read(&buf);
-        if (bytes_read == 0) {
-            std.debug.print("服务器关闭连接\n", .{});
-            break;
-        }
+        // const bytes_read = try conn.stream.read(&buf);
+        // if (bytes_read == 0) {
+        //     std.debug.print("服务器关闭连接\n", .{});
+        //     break;
+        // }
 
         // const webSv = std.http.Server.init(conn, bytes_read);
         // try webSv.handle();
 
-        std.debug.print("接收到数据: {s}\n", .{buf[0..bytes_read]});
+        var httpSv = std.http.Server.init(conn, &buf);
+        var req = try httpSv.receiveHead();
+
+        // 数据回写
+        var buffer: [4000]u8 = undefined;
+        var resp = req.respondStreaming(.{
+            .send_buffer = &buffer,
+        });
+
+        try resp.writeAll("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+
+        // std.debug.print("接收到数据: {s}\n", .{buf[0..bytes_read]});
     }
 }
