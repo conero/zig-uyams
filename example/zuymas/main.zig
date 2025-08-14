@@ -39,6 +39,7 @@ pub fn main() !void {
     // 网络命令
     _ = app.command("tell", tellCmd);
     _ = app.command("http", httpCmd);
+    _ = app.command("echo", echoCmd);
 
     // 交互式输入测试
     const interCmdName = [_][]const u8{ "interactive", "inter" };
@@ -105,7 +106,8 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  tell [addr]     网络地址测试\n", .{});
     std.debug.print("  interact,inter  交互式输入参数\n", .{});
     std.debug.print("  cat [path]      文件读取或写入\n", .{});
-    std.debug.print("  http [port]     监听http服务器\n", .{});
+    std.debug.print("  http [port]     监听http服务器，默认端口 18080\n", .{});
+    std.debug.print("  echo [port]     监听tcp服务器，默认端口 18082\n", .{});
     std.debug.print("  thread          并发测试\n", .{});
     std.debug.print("       -count [10]    指定并发数\n", .{});
     std.debug.print("       -sleep [1000]  指定睡眠数，毫秒级\n", .{});
@@ -487,7 +489,7 @@ fn httpCmd(arg: *uymas.cli.Arg) void {
     const portIpt = arg.getInt("port") orelse 18080;
     const port: u16 = @intCast(portIpt);
 
-    std.debug.print("启动服务器，0.0.0.0:{d}\n", .{port});
+    std.debug.print("启动 HTTP 服务器，0.0.0.0:{d}\n", .{port});
 
     echoHttp(port) catch |err| {
         std.debug.print("服务器启动失败，Error: {s}\n", .{@errorName(err)});
@@ -515,15 +517,6 @@ fn echoHttp(port: u16) !void {
 fn handleHttp(conn: std.net.Server.Connection) !void {
     var buf: [1024]u8 = undefined;
     while (true) {
-        // const bytes_read = try conn.stream.read(&buf);
-        // if (bytes_read == 0) {
-        //     std.debug.print("服务器关闭连接\n", .{});
-        //     break;
-        // }
-
-        // const webSv = std.http.Server.init(conn, bytes_read);
-        // try webSv.handle();
-
         var httpSv = std.http.Server.init(conn, &buf);
         var req = try httpSv.receiveHead();
 
@@ -534,7 +527,46 @@ fn handleHttp(conn: std.net.Server.Connection) !void {
         });
 
         try resp.writeAll("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+    }
+}
 
-        // std.debug.print("接收到数据: {s}\n", .{buf[0..bytes_read]});
+fn echoCmd(arg: *uymas.cli.Arg) void {
+    const portIpt = arg.getInt("port") orelse 18082;
+    const port: u16 = @intCast(portIpt);
+
+    std.debug.print("启动 TCP 服务器，0.0.0.0:{d}\n", .{port});
+
+    echoHttp(port) catch |err| {
+        std.debug.print("服务器启动失败，Error: {s}\n", .{@errorName(err)});
+    };
+}
+
+fn echoTcp(port: u16) !void {
+    const address = try std.net.Address.parseIp("0.0.0.0", port);
+    var server = try address.listen(.{});
+    defer server.deinit();
+
+    // 服务器连接
+    while (true) {
+        const conn = try server.accept();
+        // defer conn.deinit();
+        std.debug.print("服务器连接成功\n", .{});
+
+        // 处理http请求
+        try handleTcp(conn);
+    }
+}
+
+// 处理http请求
+fn handleTcp(conn: std.net.Server.Connection) !void {
+    var buf: [1024]u8 = undefined;
+    while (true) {
+        const bytes_read = try conn.stream.read(&buf);
+        if (bytes_read == 0) {
+            std.debug.print("服务器关闭连接\n", .{});
+            break;
+        }
+
+        std.debug.print("接收到数据: {s}\n", .{buf[0..bytes_read]});
     }
 }
