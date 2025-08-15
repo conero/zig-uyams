@@ -486,8 +486,15 @@ fn threadCmd(arg: *uymas.cli.Arg) void {
 // 服务器访问
 // @todo 服务器访问
 fn httpCmd(arg: *uymas.cli.Arg) void {
-    const portIpt = arg.getInt("port") orelse 18080;
-    const port: u16 = @intCast(portIpt);
+    const subComd = arg.getSubCommand();
+    var port: u16 = 0;
+    if (subComd.len > 0) {
+        port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
+            std.debug.print("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            return;
+        };
+    }
+    port = if (port < 1) 18080 else port;
 
     std.debug.print("启动 HTTP 服务器，0.0.0.0:{d}\n", .{port});
 
@@ -504,13 +511,28 @@ fn echoHttp(port: u16) !void {
 
     // 服务器连接
     while (true) {
-        const conn = try server.accept();
-        // defer conn.deinit();
-        std.debug.print("服务器连接成功\n", .{});
+        const conn = server.accept() catch |err| {
+            std.debug.print("服务器连接失败，Error: {s}\n", .{@errorName(err)});
+            continue;
+        };
 
         // 处理http请求
-        try handleHttp(conn);
+        // handleHttp(conn) catch |err| {
+        //     std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+        // };
+        _ = std.Thread.spawn(.{}, handleHttpThread, .{conn}) catch |err| {
+            std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+            continue;
+        };
     }
+}
+
+// 处理线程
+fn handleHttpThread(conn: std.net.Server.Connection) void {
+    std.debug.print("客户端连接成功\n", .{});
+    handleHttp(conn) catch |err| {
+        std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+    };
 }
 
 // 处理http请求
@@ -531,8 +553,15 @@ fn handleHttp(conn: std.net.Server.Connection) !void {
 }
 
 fn echoCmd(arg: *uymas.cli.Arg) void {
-    const portIpt = arg.getInt("port") orelse 18082;
-    const port: u16 = @intCast(portIpt);
+    const subComd = arg.getSubCommand();
+    var port: u16 = 0;
+    if (subComd.len > 0) {
+        port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
+            std.debug.print("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            return;
+        };
+    }
+    port = if (port < 1) 18080 else port;
 
     std.debug.print("启动 TCP 服务器，0.0.0.0:{d}\n", .{port});
 
