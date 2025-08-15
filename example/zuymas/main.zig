@@ -529,7 +529,7 @@ fn echoHttp(port: u16) !void {
 
 // 处理线程
 fn handleHttpThread(conn: std.net.Server.Connection) void {
-    std.debug.print("客户端连接成功\n", .{});
+    std.debug.print("客户端连接成功，连接地址 {?}\n", .{conn.address});
     handleHttp(conn) catch |err| {
         std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
     };
@@ -537,18 +537,37 @@ fn handleHttpThread(conn: std.net.Server.Connection) void {
 
 // 处理http请求
 fn handleHttp(conn: std.net.Server.Connection) !void {
+    defer conn.stream.close();
+
     var buf: [1024]u8 = undefined;
-    while (true) {
-        var httpSv = std.http.Server.init(conn, &buf);
-        var req = try httpSv.receiveHead();
+    var httpSv = std.http.Server.init(conn, &buf);
+
+    // 文件读取
+    while (httpSv.state == .ready) {
+        var request = httpSv.receiveHead() catch |err| switch (err) {
+            error.HttpConnectionClosing => return,
+            else => return err,
+        };
+        std.debug.print("{any}: {s}\n", .{ request.head.method, request.head.target });
+
+        // 内容读取
+        var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        defer arena.deinit();
+        const allocator = arena.allocator();
+        var reader = try request.reader();
+        const contents = try reader.readAllAlloc(allocator, 4096);
+
+        std.debug.print("读取到内容： {s}\n", .{contents});
 
         // 数据回写
-        var buffer: [4000]u8 = undefined;
-        var resp = req.respondStreaming(.{
-            .send_buffer = &buffer,
-        });
-
-        try resp.writeAll("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+        try request.respond(
+            "Hello World，power from Joshua Conero!",
+            .{
+                .extra_headers = &.{
+                    .{ .name = "custom header", .value = "custom value" },
+                },
+            },
+        );
     }
 }
 
