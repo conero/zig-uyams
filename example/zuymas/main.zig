@@ -57,6 +57,9 @@ pub fn main() !void {
         .options = threadOptionList,
     });
 
+    // 执行命令行
+    _ = app.command("exec", execCmd);
+
     // 入口函数
     app.index(indexCmd);
     app.help(helpCmd);
@@ -108,6 +111,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  cat [path]      文件读取或写入\n", .{});
     std.debug.print("  http [port]     监听http服务器，默认端口 18080\n", .{});
     std.debug.print("  echo [port]     监听tcp服务器，默认端口 18082\n", .{});
+    std.debug.print("  exec [command]  执行执行的命令\n", .{});
     std.debug.print("  thread          并发测试\n", .{});
     std.debug.print("       -count [10]    指定并发数\n", .{});
     std.debug.print("       -sleep [1000]  指定睡眠数，毫秒级\n", .{});
@@ -617,5 +621,36 @@ fn handleTcp(conn: std.net.Server.Connection) !void {
         }
 
         std.debug.print("接收到数据: {s}\n", .{buf[0..bytes_read]});
+    }
+}
+
+// 命令行执行
+fn execCmd(arg: *uymas.cli.Arg) void {
+    const subComd = arg.getSubCommand();
+    if (subComd.len == 0) {
+        std.log.err("请指定命令行", .{});
+        return;
+    }
+
+    std.log.info("执行命令行: {s}\n", .{subComd});
+
+    const allocator = std.heap.page_allocator;
+    // const params: []const []const u8 = [_][]const u8{subComd};
+    var child = std.process.Child.init(&.{subComd}, allocator);
+
+    // 执行
+    const term = child.spawnAndWait() catch |err| {
+        std.log.err("执行命令行失败: {any}\n", .{err});
+        return;
+    };
+    // if (trem != .Exited) {
+    //     std.log.err("执行命令行失败: {any}\n", .{trem});
+    //     return;
+    // }
+    switch (term) {
+        .Exited => |v| std.log.err("执行命令行失败，{d}\n", .{v}),
+        .Signal => |v| std.log.info("zig build was interrupted with signal: {d}", .{v}),
+        .Stopped => |v| std.log.info("zig build was stopped with code: {d}", .{v}),
+        .Unknown => |v| std.log.info("zig build encountered unknown: {d}", .{v}),
     }
 }
