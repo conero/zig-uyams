@@ -27,7 +27,8 @@
 
 > 程序功能实现，如加入日志等
 
-
+- **example/zuymas**
+  - pref: catch 异常输出使用 `std.log.err` 来错误打印日志信息
 
 
 

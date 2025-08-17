@@ -203,7 +203,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
         if (arg.checkOpt("exec-1")) { // 方式1，用于测试
             std.debug.print("使用实验性的方法 1 进行命令执行……\n", .{});
             const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
-                std.debug.print("执行命令错误，{?}\n", .{err});
+                std.log.err("执行命令错误，{?}\n", .{err});
                 return;
             };
 
@@ -212,7 +212,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
         } else {
             const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
-                std.debug.print("执行命令错误，{?}\n", .{err});
+                std.log.err("执行命令错误，{?}\n", .{err});
                 return;
             };
 
@@ -341,7 +341,7 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
     }
     //std.debug.print("测试地址 reqAddr: {any}\n", .{reqAddrResult});
     const stream = std.net.tcpConnectToHost(std.heap.page_allocator, host, port) catch |err| {
-        std.debug.print("无法连接到 {s}:{d}，{?}\n", .{ host, port, err });
+        std.log.err("无法连接到 {s}:{d}，{?}\n", .{ host, port, err });
         return;
     };
     std.debug.print("已连接到 {?}\n", .{stream});
@@ -398,7 +398,7 @@ fn catCmd(arg: *uymas.cli.Arg) void {
 
     // 文件逐行读取
     var file = std.fs.cwd().openFile(filenamme, .{}) catch |err| {
-        std.debug.print("无法打开文件：{s}\n", .{@errorName(err)});
+        std.log.err("无法打开文件：{s}\n", .{@errorName(err)});
         return;
     };
     defer file.close();
@@ -466,14 +466,14 @@ fn threadCmd(arg: *uymas.cli.Arg) void {
     const allocator = std.heap.page_allocator;
     const countUzie = @as(usize, @intCast(count));
     var threadGroup = allocator.alloc(std.Thread, countUzie) catch |err| {
-        std.debug.print("切片分配失败，Error: {s}\n", .{@errorName(err)});
+        std.log.err("切片分配失败，Error: {s}\n", .{@errorName(err)});
         return;
     };
 
     // 执行进程
     for (0..countUzie) |i| {
         threadGroup[i] = std.Thread.spawn(.{}, runEachThread, .{ i, isSilent, @as(usize, @intCast(sleepMs)) }) catch |err| {
-            std.debug.print("创建线程失败，Error: {s}\n", .{@errorName(err)});
+            std.log.err("创建线程失败，Error: {s}\n", .{@errorName(err)});
             continue;
         };
     }
@@ -490,7 +490,7 @@ fn httpCmd(arg: *uymas.cli.Arg) void {
     var port: u16 = 0;
     if (subComd.len > 0) {
         port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
-            std.debug.print("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            std.log.err("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
             return;
         };
     }
@@ -499,7 +499,7 @@ fn httpCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("启动 HTTP 服务器，0.0.0.0:{d}\n", .{port});
 
     echoHttp(port) catch |err| {
-        std.debug.print("服务器启动失败，Error: {s}\n", .{@errorName(err)});
+        std.log.err("服务器启动失败，Error: {s}\n", .{@errorName(err)});
     };
 }
 
@@ -512,7 +512,7 @@ fn echoHttp(port: u16) !void {
     // 服务器连接
     while (true) {
         const conn = server.accept() catch |err| {
-            std.debug.print("服务器连接失败，Error: {s}\n", .{@errorName(err)});
+            std.log.err("服务器连接失败，Error: {s}\n", .{@errorName(err)});
             continue;
         };
 
@@ -521,7 +521,7 @@ fn echoHttp(port: u16) !void {
         //     std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
         // };
         _ = std.Thread.spawn(.{}, handleHttpThread, .{conn}) catch |err| {
-            std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+            std.log.err("处理http请求失败，Error: {s}\n", .{@errorName(err)});
             continue;
         };
     }
@@ -529,9 +529,10 @@ fn echoHttp(port: u16) !void {
 
 // 处理线程
 fn handleHttpThread(conn: std.net.Server.Connection) void {
-    std.debug.print("客户端连接成功，连接地址 {?}\n", .{conn.address});
+    //std.debug.print("客户端连接成功，连接地址 {?}\n", .{conn.address});
+    std.log.debug("客户端连接成功，连接地址 {?}\n", .{conn.address});
     handleHttp(conn) catch |err| {
-        std.debug.print("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+        std.log.err("处理http请求失败，Error: {s}\n", .{@errorName(err)});
     };
 }
 
@@ -576,7 +577,7 @@ fn echoCmd(arg: *uymas.cli.Arg) void {
     var port: u16 = 0;
     if (subComd.len > 0) {
         port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
-            std.debug.print("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            std.log.err("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
             return;
         };
     }
@@ -585,7 +586,7 @@ fn echoCmd(arg: *uymas.cli.Arg) void {
     std.debug.print("启动 TCP 服务器，0.0.0.0:{d}\n", .{port});
 
     echoHttp(port) catch |err| {
-        std.debug.print("服务器启动失败，Error: {s}\n", .{@errorName(err)});
+        std.log.err("服务器启动失败，Error: {s}\n", .{@errorName(err)});
     };
 }
 
