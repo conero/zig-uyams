@@ -30,6 +30,7 @@
 - **example/zuymas**
   - feat: 初步加入命令执行命令，用于直接调用命令（初步）
   - pref: catch 异常输出使用 `std.log.err` 来错误打印日志信息
+  - pref: 使用 `.{}` 来简写部分参数
 
 
 

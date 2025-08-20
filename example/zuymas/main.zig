@@ -25,16 +25,14 @@ pub fn main() !void {
 
     // 命令注册
     var timeOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
-    try timeOptionList.append(uymas.cli.Option{ .name = "tz" });
+    try timeOptionList.append(.{ .name = "tz" });
     app.commandWith("time", uymas.cli.RegisterItem{
         .execFn = timeCmd,
         .options = timeOptionList,
     });
     _ = app.command("version", versionCmd);
     // 命令注册
-    // app.commandList([_]*const [:0]u8{ @as(u8, "help"), @as(u8, "?") }, helpCmd);
-    const vDemoCmd = [_][]const u8{ "demo", "dm" };
-    _ = app.commandList(&vDemoCmd, demoCmd);
+    _ = app.commandList(&.{ "demo", "dm" }, demoCmd);
 
     // 网络命令
     _ = app.command("tell", tellCmd);
@@ -42,16 +40,15 @@ pub fn main() !void {
     _ = app.command("echo", echoCmd);
 
     // 交互式输入测试
-    const interCmdName = [_][]const u8{ "interactive", "inter" };
-    _ = app.commandList(&interCmdName, interactCmd);
+    _ = app.commandList(&.{ "interactive", "inter" }, interactCmd);
     // 文件读写测试
     _ = app.command("cat", catCmd);
     // 并发测试
     //_ = app.command("thread", threadCmd);
     var threadOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
-    try threadOptionList.append(uymas.cli.Option{ .name = "count" });
-    try threadOptionList.append(uymas.cli.Option{ .name = "silent" });
-    try threadOptionList.append(uymas.cli.Option{ .name = "sleep" });
+    try threadOptionList.append(.{ .name = "count" });
+    try threadOptionList.append(.{ .name = "silent" });
+    try threadOptionList.append(.{ .name = "sleep" });
     _ = app.commandWith("thread", uymas.cli.RegisterItem{
         .execFn = threadCmd,
         .options = threadOptionList,
