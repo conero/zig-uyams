@@ -244,7 +244,7 @@ pub const App = struct {
             regItem.commandName = string.mutableAlloc(self.allocator, name);
         }
         self.registersMap.put(name, regItem) catch |err| {
-            std.debug.print("registersMap 注册异常，{?}\n", .{err});
+            std.debug.print("registersMap 注册异常，{any}\n", .{err});
         };
     }
 

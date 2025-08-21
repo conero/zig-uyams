@@ -180,7 +180,7 @@ pub const Arg = struct {
         const allocator = self.allocator.?;
         if (self.optionKvEntry.get(opt)) |value| {
             return std.mem.join(allocator, " ", value) catch |err| {
-                std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                std.debug.print("选项键值对入库时键错误，{any}\n", .{err});
                 return null;
             };
         }
@@ -205,7 +205,7 @@ pub const Arg = struct {
                 }
             } else {
                 return std.fmt.parseInt(isize, value, 10) catch |err| {
-                    std.debug.print("选项键值对入库时键错误，{?}\n", .{err});
+                    std.debug.print("选项键值对入库时键错误，{any}\n", .{err});
                     return null;
                 };
             }

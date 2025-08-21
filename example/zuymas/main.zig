@@ -179,7 +179,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     if (std.mem.join(allocator, ", ", optList)) |joinOpt| {
         std.debug.print("option({d}): {s}\n", .{ optList.len, joinOpt });
     } else |err| {
-        std.debug.print("option join 错误，{?}", .{err});
+        std.debug.print("option join 错误，{any}", .{err});
     }
 
     // 数据打印
@@ -187,7 +187,8 @@ fn testCmd(arg: *uymas.cli.Arg) void {
         std.debug.print("\n---- data ---- \n", .{});
         var iter = arg.optionKvEntry.iterator();
         while (iter.next()) |each| {
-            std.debug.print("    {s}: {s}\n", .{ each.key_ptr.*, each.value_ptr.* });
+            // @todo 此处临时写法
+            std.debug.print("    {any}: {any}\n", .{ each.key_ptr.*, each.value_ptr.* });
         }
         std.debug.print("\n", .{});
     }
@@ -198,13 +199,13 @@ fn testCmd(arg: *uymas.cli.Arg) void {
         if (std.mem.join(allocator, " ", toRunCmd)) |joinOpt| {
             std.debug.print("执行命令：{s}\n", .{joinOpt});
         } else |err| {
-            std.debug.print("join 错误，{?}\n", .{err});
+            std.debug.print("join 错误，{any}\n", .{err});
         }
 
         if (arg.checkOpt("exec-1")) { // 方式1，用于测试
             std.debug.print("使用实验性的方法 1 进行命令执行……\n", .{});
             const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
-                std.log.err("执行命令错误，{?}\n", .{err});
+                std.log.err("执行命令错误，{any}\n", .{err});
                 return;
             };
 
@@ -213,7 +214,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
             std.debug.print("\n----- EXIT CODE: {} -----\n", .{result.exit_code});
         } else {
             const result = uymas.cli.execAlloc(toRunCmd, allocator) catch |err| {
-                std.log.err("执行命令错误，{?}\n", .{err});
+                std.log.err("执行命令错误，{any}\n", .{err});
                 return;
             };
 
@@ -228,7 +229,7 @@ fn testCmd(arg: *uymas.cli.Arg) void {
     if (std.process.getCwdAlloc(allocator)) |cwdPath| {
         std.debug.print("CWD: {s}\n", .{cwdPath});
     } else |err| {
-        std.debug.print("CWD 获取错误，{?}", .{err});
+        std.debug.print("CWD 获取错误，{any}", .{err});
     }
     std.debug.print("Root: {s}\n", .{uymas.cli.rootPath(allocator)});
 
@@ -334,24 +335,24 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
     const reqAddrResult = std.net.Address.parseIp4(host, port);
     var reqAddr: std.net.Address = undefined;
     if (reqAddrResult) |reqAddrOpt| {
-        std.debug.print("请求地址: {?}\n", .{reqAddrOpt});
+        std.debug.print("请求地址: {any}\n", .{reqAddrOpt});
         reqAddr = reqAddrOpt;
     } else |err| {
-        std.debug.print("地址（{s}:{d}）解析错误，{?}", .{ host, port, err });
+        std.debug.print("地址（{s}:{d}）解析错误，{any}", .{ host, port, err });
         return;
     }
     //std.debug.print("测试地址 reqAddr: {any}\n", .{reqAddrResult});
     const stream = std.net.tcpConnectToHost(std.heap.page_allocator, host, port) catch |err| {
-        std.log.err("无法连接到 {s}:{d}，{?}\n", .{ host, port, err });
+        std.log.err("无法连接到 {s}:{d}，{any}\n", .{ host, port, err });
         return;
     };
-    std.debug.print("已连接到 {?}\n", .{stream});
+    std.debug.print("已连接到 {any}\n", .{stream});
     if (std.net.tcpConnectToAddress(reqAddr)) |conn| {
         defer conn.close();
         std.debug.print("连接成功\n", .{});
-        std.debug.print("开始发送数据:{?}\n", .{conn});
+        std.debug.print("开始发送数据:{any}\n", .{conn});
     } else |err| {
-        std.debug.print("连接错误，{?}\n", .{err});
+        std.debug.print("连接错误，{any}\n", .{err});
         return;
     }
 }
@@ -491,7 +492,7 @@ fn httpCmd(arg: *uymas.cli.Arg) void {
     var port: u16 = 0;
     if (subComd.len > 0) {
         port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
-            std.log.err("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            std.log.err("端口号错误，请输入数字 {s}. {any}\n", .{ subComd, err });
             return;
         };
     }
@@ -530,10 +531,9 @@ fn echoHttp(port: u16) !void {
 
 // 处理线程
 fn handleHttpThread(conn: std.net.Server.Connection) void {
-    //std.debug.print("客户端连接成功，连接地址 {?}\n", .{conn.address});
-    std.log.debug("客户端连接成功，连接地址 {?}\n", .{conn.address});
+    std.log.debug("客户端连接成功，连接地址 {any}\n", .{conn.address});
     handleHttp(conn) catch |err| {
-        std.log.err("处理http请求失败，Error: {s}\n", .{@errorName(err)});
+        std.log.err("处理http请求失败，Error: {any}\n", .{@errorName(err)});
     };
 }
 
@@ -578,7 +578,7 @@ fn echoCmd(arg: *uymas.cli.Arg) void {
     var port: u16 = 0;
     if (subComd.len > 0) {
         port = std.fmt.parseInt(u16, subComd, 10) catch |err| {
-            std.log.err("端口号错误，请输入数字 {s}. {?}\n", .{ subComd, err });
+            std.log.err("端口号错误，请输入数字 {s}. {any}\n", .{ subComd, err });
             return;
         };
     }
