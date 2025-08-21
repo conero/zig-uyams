@@ -195,7 +195,7 @@ pub fn formatSizeAlloc(alloc: std.mem.Allocator, bytes: u64) []u8 {
         size /= 1024.0;
     }
 
-    return string.format(alloc, "{f:.8} {s}", .{ size, units[unit_index] });
+    return string.format(alloc, "{d:.8} {s}", .{ size, units[unit_index] });
 }
 
 test "strToInt base test" {

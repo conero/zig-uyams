@@ -33,7 +33,7 @@ pub const Date = struct {
     hour: usize = 0,
     minute: usize = 0,
     second: usize = 0,
-    leapType: time.epoch.YearLeapKind = time.epoch.YearLeapKind.not_leap,
+    isLeapYear: bool = false,
     utcTz: isize = 0, // 时间分区(time zone)
     residualSec: f128 = 0, // 计算日期后剩余的秒数（用于获取精确的时间戳）
 
@@ -46,8 +46,8 @@ pub const Date = struct {
     pub fn fromNano(nano: i128) Date {
         const dayTotal: f128 = @as(f128, @floatFromInt(nano)) / @as(f128, @floatFromInt(time.ns_per_day));
         const esYear = estimateYear(dayTotal);
-        const leapType = if (time.epoch.isLeapYear(@as(time.epoch.Year, @intCast(esYear.year)))) time.epoch.YearLeapKind.leap else time.epoch.YearLeapKind.not_leap;
-        const esMonth = estimateMonth(leapType, esYear.residualDay);
+        const isLeapYear = std.time.epoch.isLeapYear(@as(u16, @intCast(esYear.year)));
+        const esMonth = estimateMonth(isLeapYear, esYear.residualDay);
         const esDay = estimateDay(esMonth.residualDay);
         const esHour = estimateTime(esDay.residualDay);
 
@@ -60,7 +60,7 @@ pub const Date = struct {
             .hour = esHour.hour,
             .minute = esHour.minute,
             .second = esHour.second,
-            .leapType = leapType,
+            .isLeapYear = isLeapYear,
         };
     }
 
@@ -99,9 +99,8 @@ pub const Date = struct {
         }
 
         //  月份值计算
-        const yearLearKindKind = yearLearKind(usize, self.year);
         for (1..self.month) |mth| {
-            const mthDay = getDaysInMonth(yearLearKindKind, mth);
+            const mthDay = getDaysInMonth(std.time.epoch.isLeapYear(self.year), mth);
             nano += @as(i128, @intCast(mthDay)) * time.ns_per_day;
         }
 
@@ -163,7 +162,7 @@ pub const Date = struct {
             }
         }
 
-        return std.fmt.allocPrintZ(alloc, "{d}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", .{
+        return std.fmt.allocPrint(alloc, "{d}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", .{
             self.year,
             self.month,
             day,
@@ -187,7 +186,7 @@ pub const Date = struct {
             }
         }
 
-        return std.fmt.allocPrintZ(alloc, "{:0>2}:{:0>2}:{:0>2}", .{
+        return std.fmt.allocPrint(alloc, "{:0>2}:{:0>2}:{:0>2}", .{
             @as(usize, @intCast(hour)),
             self.minute,
             self.second,
@@ -350,17 +349,17 @@ fn estimateYear(dayTotal: f128) EstimateDate {
 }
 
 /// 根据总的天数评估年份
-fn estimateMonth(leapType: time.epoch.YearLeapKind, dayTotal: f128) EstimateDate {
+fn estimateMonth(isLeapYear: bool, dayTotal: f128) EstimateDate {
     const dayInt = @as(usize, @intFromFloat(dayTotal));
 
     // 统计日期
-    var dayCount: usize = if (leapType == time.epoch.YearLeapKind.leap) 366 else 365;
+    var dayCount: usize = if (isLeapYear) 366 else 365;
     var relMonth: usize = 1;
     var residualDay: f128 = 0;
     // 月份遍历
     var mth: usize = 12;
     while (mth > 0) : (mth -= 1) {
-        const vDay = getDaysInMonth(leapType, mth);
+        const vDay = getDaysInMonth(isLeapYear, mth);
         dayCount -= @intCast(vDay);
         if (dayInt >= dayCount) {
             relMonth = mth;
@@ -405,12 +404,12 @@ fn estimateTime(dayTotal: f128) EstimateDate {
 
 /// 根据月份获取对应的天数：一月大，二月平，三月大，四月小，五月大，六月小，七月大，八月大，九月小，十月大，十一月小，十二月大。
 /// 1/3/5/7/8/10/12月大=31，2=28/29, 4/6/9/11月小=30。
-pub fn getDaysInMonth(leap_year: time.epoch.YearLeapKind, month: usize) u5 {
+pub fn getDaysInMonth(isLeapYear: bool, month: usize) u5 {
     return switch (month) {
         1, 3, 5, 7, 8, 10, 12 => 31,
-        2 => @as(u5, switch (leap_year) {
-            .leap => 29,
-            .not_leap => 28,
+        2 => @as(u5, switch (isLeapYear) {
+            true => 29,
+            false => 28,
         }),
         4, 6, 9, 11 => 30,
         else => 0,
@@ -442,10 +441,6 @@ pub fn dayToTime(comptime T: type, day: T) struct { day: usize, hour: usize, min
         .second = secondInt,
         .residualSec = residualSec,
     };
-}
-
-pub fn yearLearKind(comptime T: type, year: T) time.epoch.YearLeapKind {
-    return if (time.epoch.isLeapYear(@as(time.epoch.Year, @intCast(year)))) .leap else .not_leap;
 }
 
 test "Date.now base test" {

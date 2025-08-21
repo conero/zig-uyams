@@ -24,8 +24,9 @@ pub fn main() !void {
     });
 
     // 命令注册
-    var timeOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
-    try timeOptionList.append(.{ .name = "tz" });
+    var timeOptionList: std.ArrayList(uymas.cli.Option) = .empty;
+    defer timeOptionList.deinit(allocator);
+    try timeOptionList.append(allocator, .{ .name = "tz" });
     app.commandWith("time", uymas.cli.RegisterItem{
         .execFn = timeCmd,
         .options = timeOptionList,
@@ -45,10 +46,12 @@ pub fn main() !void {
     _ = app.command("cat", catCmd);
     // 并发测试
     //_ = app.command("thread", threadCmd);
-    var threadOptionList = std.ArrayList(uymas.cli.Option).init(allocator);
-    try threadOptionList.append(.{ .name = "count" });
-    try threadOptionList.append(.{ .name = "silent" });
-    try threadOptionList.append(.{ .name = "sleep" });
+    var threadOptionList: std.ArrayList(uymas.cli.Option) = .empty;
+    defer threadOptionList.deinit(allocator);
+
+    try threadOptionList.append(allocator, .{ .name = "count" });
+    try threadOptionList.append(allocator, .{ .name = "silent" });
+    try threadOptionList.append(allocator, .{ .name = "sleep" });
     _ = app.commandWith("thread", uymas.cli.RegisterItem{
         .execFn = threadCmd,
         .options = threadOptionList,
@@ -260,7 +263,7 @@ fn timeCmd(arg: *uymas.cli.Arg) void {
     const tzIndex = arg.getInt("tz") orelse 8;
     std.debug.print("基于当前本地系统时间（UTC-{d}）\n\n", .{tzIndex});
     while (true) {
-        std.time.sleep(std.time.ns_per_s);
+        std.Thread.sleep(std.time.ns_per_s);
         var now = uymas.date.Date.now();
         std.debug.print("\r👉 {s}", .{now.cnTime().timeStringTz(std.heap.smp_allocator, tzIndex)});
     }

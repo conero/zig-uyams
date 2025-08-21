@@ -9,12 +9,12 @@ pub fn mutable(s: []const u8) []u8 {
 
 /// 提供内存分配器字面字符串变为可变的字符串
 pub fn mutableAlloc(alloc: std.mem.Allocator, s: []const u8) []u8 {
-    return std.fmt.allocPrintZ(alloc, "{s}", .{s}) catch unreachable;
+    return std.fmt.allocPrint(alloc, "{s}", .{s}) catch unreachable;
 }
 
 /// 格式化字符串
 pub fn format(alloc: std.mem.Allocator, comptime vFmt: []const u8, args: anytype) []u8 {
-    return std.fmt.allocPrintZ(alloc, vFmt, args) catch unreachable;
+    return std.fmt.allocPrint(alloc, vFmt, args) catch unreachable;
 }
 
 /// 非托管 list 转换为字符串

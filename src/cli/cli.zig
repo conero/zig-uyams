@@ -119,12 +119,12 @@ pub const RegisterItem = struct {
         if (self.options) |allowOptList| {
             for (allowOptList.items) |option| {
                 checkMap.put(option.name, true) catch |err| {
-                    std.debug.print("checkMap 注册异常，{?}\n", .{err});
+                    std.debug.print("checkMap 注册异常，{any}\n", .{err});
                 };
                 if (option.alias) |alias| {
                     for (alias) |a| {
                         checkMap.put(a, true) catch |err| {
-                            std.debug.print("checkMap 注册异常，{?}\n", .{err});
+                            std.debug.print("checkMap 注册异常，{any}\n", .{err});
                         };
                     }
                 }
@@ -224,7 +224,7 @@ pub const App = struct {
             .commandName = string.mutableAlloc(self.allocator, name),
         };
         self.registersMap.put(name, item) catch |err| {
-            std.debug.print("registersMap 注册异常，{?}\n", .{err});
+            std.debug.print("registersMap 注册异常，{any}\n", .{err});
         };
         return self;
     }
@@ -375,7 +375,7 @@ pub fn rootPath(alloc: std.mem.Allocator) []u8 {
         return "";
     }
 
-    return std.fmt.allocPrintZ(alloc, "{s}", .{binPathOr.?}) catch |err| {
+    return std.fmt.allocPrint(alloc, "{s}", .{binPathOr.?}) catch |err| {
         std.debug.print("字符串转换错误，{any}", .{err});
         return "";
     };
