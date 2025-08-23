@@ -362,35 +362,38 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
 
 // 交互命令
 fn interactCmd(_: *uymas.cli.Arg) void {
+    @panic("待实现命令行交互测试……");
     // 获取标准输入流
-    const stdin = std.io.getStdIn().reader();
-    // 获取标准输出流（用于打印提示信息）
-    const stdout = std.io.getStdOut().writer();
+    // var stdin_buffer: [1024]u8 = undefined;
+    // const stdin = std.fs.File.stdin().reader(&stdin_buffer);
+    // // 获取标准输出流（用于打印提示信息）
+    // var stdout_buffer: [1024]u8 = undefined;
+    // const stdout = std.fs.File.stdout().writer(&stdout_buffer);
 
-    // 打印提示信息
-    stdout.print("inter> ", .{}) catch unreachable;
-    while (true) {
-        // 创建缓冲区存储输入
-        var buffer: [1024]u8 = undefined;
-        // 读取输入，直到换行符或缓冲区满
-        const input = stdin.readUntilDelimiterOrEof(&buffer, '\n') catch |err| {
-            stdout.print("读取文件错误，{any}\n", .{err}) catch unreachable;
-            break;
-        };
-        if (input) |ipt| {
-            //const iptValue: []u8 = ipt;
-            // 去除可能的回车符（Windows 系统）
-            const iptValue = std.mem.trimRight(u8, ipt, "\r");
-            if (std.mem.eql(u8, iptValue, "exit") or std.mem.eql(u8, iptValue, "quit")) {
-                //if (std.mem.eql(u8, ipt, "exit") or std.mem.eql(u8, ipt, "quit")) {
-                stdout.print("退出程序\n", .{}) catch unreachable;
-                break;
-            }
-            stdout.print("输入数据(input)：{s}\n", .{ipt}) catch unreachable;
-        }
-        //stdout.print("输入数据：{any}\n", .{buffer}) catch unreachable;
-        stdout.print("inter> ", .{}) catch unreachable;
-    }
+    // // 打印提示信息
+    // //stdout.print("inter> ", .{}) catch unreachable;
+    // while (true) {
+    //     // 创建缓冲区存储输入
+    //     var buffer: [1024]u8 = undefined;
+    //     // 读取输入，直到换行符或缓冲区满
+    //     const input = stdin.readUntilDelimiterOrEof(&buffer, '\n') catch |err| {
+    //         stdout.print("读取文件错误，{any}\n", .{err}) catch unreachable;
+    //         break;
+    //     };
+    //     if (input) |ipt| {
+    //         //const iptValue: []u8 = ipt;
+    //         // 去除可能的回车符（Windows 系统）
+    //         const iptValue = std.mem.trimRight(u8, ipt, "\r");
+    //         if (std.mem.eql(u8, iptValue, "exit") or std.mem.eql(u8, iptValue, "quit")) {
+    //             //if (std.mem.eql(u8, ipt, "exit") or std.mem.eql(u8, ipt, "quit")) {
+    //             stdout.print("退出程序\n", .{}) catch unreachable;
+    //             break;
+    //         }
+    //         stdout.print("输入数据(input)：{s}\n", .{ipt}) catch unreachable;
+    //     }
+    //     //stdout.print("输入数据：{any}\n", .{buffer}) catch unreachable;
+    //     stdout.print("inter> ", .{}) catch unreachable;
+    // }
 }
 
 // 文件读写测试
@@ -407,16 +410,20 @@ fn catCmd(arg: *uymas.cli.Arg) void {
         return;
     };
     defer file.close();
-    var buf_reader = std.io.bufferedReader(file.reader());
-    var reader = buf_reader.reader();
-    var lineCount: usize = 0;
-    while (reader.readUntilDelimiterOrEofAlloc(std.heap.page_allocator, '\n', 1024) catch null) |line| {
-        lineCount += 1;
-        if (lineCount % 10 == 0) {
-            _ = uymas.cli.input.optional("Entry to continue: ");
-        }
-        std.debug.print("{s}\n", .{line});
-    }
+    @panic("TODO: 逐行读取文件");
+
+    // var buf_reader = std.io.bufferedReader(file.reader());
+    //var tmpBuf: [1024]u8 = undefined;
+    // var buf_reader = std.io.fixedBufferStream(file.reader(&tmpBuf));
+    // var reader = buf_reader.reader();
+    // var lineCount: usize = 0;
+    // while (file.reader(&tmpBuf).readUntilDelimiterOrEofAlloc(std.heap.page_allocator, '\n', 1024) catch null) |line| {
+    //     lineCount += 1;
+    //     if (lineCount % 10 == 0) {
+    //         _ = uymas.cli.input.optional("Entry to continue: ");
+    //     }
+    //     std.debug.print("{s}\n", .{line});
+    // }
 
     // 文件一次性读取
     // 文件读取
@@ -535,9 +542,10 @@ fn echoHttp(port: u16) !void {
 // 处理线程
 fn handleHttpThread(conn: std.net.Server.Connection) void {
     std.log.debug("客户端连接成功，连接地址 {any}\n", .{conn.address});
-    handleHttp(conn) catch |err| {
-        std.log.err("处理http请求失败，Error: {any}\n", .{@errorName(err)});
-    };
+    @panic("TODO: handleHttp");
+    // handleHttp(conn) catch |err| {
+    //     std.log.err("处理http请求失败，Error: {any}\n", .{@errorName(err)});
+    // };
 }
 
 // 处理http请求

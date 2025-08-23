@@ -4,9 +4,9 @@ const std = @import("std");
 // 可选输入
 pub fn optional(title: []const u8) []const u8 {
     // 获取标准输入流
-    const stdin = std.io.getStdIn().reader();
+    const stdin = std.fs.File.stdout().reader();
     // 获取标准输出流（用于打印提示信息）
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().writer();
 
     // 打印提示信息
     stdout.print("{s}", .{title}) catch unreachable;
