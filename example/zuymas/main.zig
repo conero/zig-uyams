@@ -360,40 +360,77 @@ fn tellCmd(arg: *uymas.cli.Arg) void {
     }
 }
 
+/// 将字符串转换为带引号的原始表示（类似 Go 的 %#v）
+fn formatRawString(writer: anytype, s: []const u8) !void {
+    try writer.writeAll("\""); // 开头引号
+
+    for (s) |c| {
+        // 转义特殊字符
+        switch (c) {
+            '"' => try writer.writeAll("\\\""), // 双引号转义
+            '\\' => try writer.writeAll("\\\\"), // 反斜杠转义
+            '\n' => try writer.writeAll("\\n"), // 换行符转义
+            '\r' => try writer.writeAll("\\r"), // 回车符转义
+            '\t' => try writer.writeAll("\\t"), // 制表符转义
+            '\x07' => try writer.writeAll("\\a"), // 响铃符转义
+            '\x08' => try writer.writeAll("\\b"), // 退格符转义
+            '\x0c' => try writer.writeAll("\\f"), // 换页符转义
+            //'\v' => try writer.writeAll("\\v"), // 垂直制表符转义
+            else => {
+                // 打印可打印字符，不可打印字符用十六进制转义
+                if (c >= 0x20 and c <= 0x7E) {
+                    try writer.writeByte(c);
+                } else {
+                    try writer.print("\\x{X:02}", .{c});
+                }
+            },
+        }
+    }
+
+    try writer.writeAll("\""); // 结尾引号
+    try writer.flush();
+}
+
 // 交互命令
 fn interactCmd(_: *uymas.cli.Arg) void {
-    @panic("待实现命令行交互测试……");
     // 获取标准输入流
-    // var stdin_buffer: [1024]u8 = undefined;
-    // const stdin = std.fs.File.stdin().reader(&stdin_buffer);
-    // // 获取标准输出流（用于打印提示信息）
-    // var stdout_buffer: [1024]u8 = undefined;
-    // const stdout = std.fs.File.stdout().writer(&stdout_buffer);
+    var stdin_buffer: [1024]u8 = undefined;
+    var stdin = std.fs.File.stdin().reader(&stdin_buffer);
+    // 获取标准输出流（用于打印提示信息）
+    var stdout_buffer: [1024]u8 = undefined;
+    var stdout = std.fs.File.stdout().writer(&stdout_buffer);
 
-    // // 打印提示信息
-    // //stdout.print("inter> ", .{}) catch unreachable;
-    // while (true) {
-    //     // 创建缓冲区存储输入
-    //     var buffer: [1024]u8 = undefined;
-    //     // 读取输入，直到换行符或缓冲区满
-    //     const input = stdin.readUntilDelimiterOrEof(&buffer, '\n') catch |err| {
-    //         stdout.print("读取文件错误，{any}\n", .{err}) catch unreachable;
-    //         break;
-    //     };
-    //     if (input) |ipt| {
-    //         //const iptValue: []u8 = ipt;
-    //         // 去除可能的回车符（Windows 系统）
-    //         const iptValue = std.mem.trimRight(u8, ipt, "\r");
-    //         if (std.mem.eql(u8, iptValue, "exit") or std.mem.eql(u8, iptValue, "quit")) {
-    //             //if (std.mem.eql(u8, ipt, "exit") or std.mem.eql(u8, ipt, "quit")) {
-    //             stdout.print("退出程序\n", .{}) catch unreachable;
-    //             break;
-    //         }
-    //         stdout.print("输入数据(input)：{s}\n", .{ipt}) catch unreachable;
-    //     }
-    //     //stdout.print("输入数据：{any}\n", .{buffer}) catch unreachable;
-    //     stdout.print("inter> ", .{}) catch unreachable;
-    // }
+    std.debug.print("inter> ", .{});
+    while (true) {
+        const line = stdin.interface.takeDelimiterExclusive('\n') catch |err| switch (err) {
+            error.EndOfStream => {
+                std.debug.print("\n\nBye, see you next.\n", .{});
+                break;
+            },
+            else => |e| {
+                std.debug.print("Err: {any}\n", .{e});
+                stdout.interface.print("Err: {any}\n", .{e}) catch |cerr| {
+                    std.debug.print("Err: {any}\n", .{cerr});
+                };
+                break;
+            },
+        };
+        // 退出
+        // @todo 直接使用 line或 lineTrim都判断无效
+        const lineTrim = std.mem.trim(u8, line, "\r\n");
+        if ((std.mem.eql(u8, lineTrim, "exit")) or (std.mem.eql(u8, lineTrim, "quit"))) {
+            break;
+        }
+        //std.debug.print("{q}\n", .{line});
+        var rowRawWrite = std.fs.File.stderr().writer(&stdout_buffer).interface;
+        formatRawString(&rowRawWrite, line) catch unreachable;
+        std.debug.print("{s}\n", .{line});
+        stdout.interface.print(" -> {s}\n", .{line}) catch |cerr| {
+            std.debug.print("Err: {any}\n", .{cerr});
+        };
+        // std.debug.print("{s}\n", .{line});
+        std.debug.print("inter> ", .{});
+    }
 }
 
 // 文件读写测试
