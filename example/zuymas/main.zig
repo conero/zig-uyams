@@ -109,6 +109,7 @@ fn helpCmd(_: *uymas.cli.Arg) void {
     std.debug.print("  tell [addr]     网络地址测试\n", .{});
     std.debug.print("  interact,inter  交互式输入参数\n", .{});
     std.debug.print("  cat [path]      文件读取或写入\n", .{});
+    std.debug.print("       -line      是否展示行号\n", .{});
     std.debug.print("  http [port]     监听http服务器，默认端口 18080\n", .{});
     std.debug.print("  echo [port]     监听tcp服务器，默认端口 18082\n", .{});
     std.debug.print("  exec [command]  执行执行的命令\n", .{});
@@ -447,8 +448,29 @@ fn catCmd(arg: *uymas.cli.Arg) void {
         return;
     };
     defer file.close();
-    @panic("TODO: 逐行读取文件");
 
+    var buf: [1024]u8 = undefined;
+    var fileReader = file.reader(&buf).interface;
+    var lineCount: usize = 0;
+    const showLine = arg.checkOpt("line");
+    while (true) {
+        lineCount += 1;
+        const line = fileReader.takeDelimiterExclusive('\n') catch |err| switch (err) {
+            error.EndOfStream => {
+                break;
+            },
+            else => |e| {
+                std.debug.print("(L={d})文件读取错误 Err: {any}\n", .{ lineCount, e });
+                break;
+            },
+        };
+
+        if (showLine) {
+            std.debug.print("\\033[32;{d}\\033[0m {s}\n", .{ lineCount, line });
+            continue;
+        }
+        std.debug.print("{s}\n", .{line});
+    }
     // var buf_reader = std.io.bufferedReader(file.reader());
     //var tmpBuf: [1024]u8 = undefined;
     // var buf_reader = std.io.fixedBufferStream(file.reader(&tmpBuf));
