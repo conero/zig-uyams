@@ -42,8 +42,19 @@ pub fn main() !void {
 
     // 交互式输入测试
     _ = app.commandList(&.{ "interactive", "inter" }, interactCmd);
+
     // 文件读写测试
-    _ = app.command("cat", catCmd);
+    //_ = app.command("thread", threadCmd);
+    var catOptionList: std.ArrayList(uymas.cli.Option) = .empty;
+    defer catOptionList.deinit(allocator);
+
+    try catOptionList.append(allocator, .{ .name = "count" });
+    //_ = app.command("cat", catCmd);
+    _ = app.commandWith("cat", .{
+        .execFn = catCmd,
+        .options = catOptionList,
+    });
+
     // 并发测试
     //_ = app.command("thread", threadCmd);
     var threadOptionList: std.ArrayList(uymas.cli.Option) = .empty;
@@ -449,13 +460,14 @@ fn catCmd(arg: *uymas.cli.Arg) void {
     };
     defer file.close();
 
-    var buf: [1024]u8 = undefined;
-    var fileReader = file.reader(&buf).interface;
+    var buf: [1048576]u8 = undefined;
+    //var fileReader = file.reader(&buf).interface;
+    var fileReader = file.reader(&buf);
     var lineCount: usize = 0;
     const showLine = arg.checkOpt("line");
     while (true) {
         lineCount += 1;
-        const line = fileReader.takeDelimiterExclusive('\n') catch |err| switch (err) {
+        const line = fileReader.interface.takeDelimiterExclusive('\n') catch |err| switch (err) {
             error.EndOfStream => {
                 break;
             },
