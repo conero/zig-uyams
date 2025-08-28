@@ -48,7 +48,7 @@ pub fn main() !void {
     var catOptionList: std.ArrayList(uymas.cli.Option) = .empty;
     defer catOptionList.deinit(allocator);
 
-    try catOptionList.append(allocator, .{ .name = "count" });
+    try catOptionList.append(allocator, .{ .name = "line" });
     //_ = app.command("cat", catCmd);
     _ = app.commandWith("cat", .{
         .execFn = catCmd,
